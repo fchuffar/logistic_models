@@ -1,12 +1,12 @@
 # Regression logistique
 
-On cherche une relation entre une **variable binaire** $Y$ (observée, à expliqué) et un ensemble de variables explicatives $X$ (quantitative ou qualitatives). 
+On cherche une relation entre une **variable binaire** $Y$ (observée, à expliquer) et un ensemble de variables explicatives $X$ (quantitatives ou qualitatives). 
 
 $$Y \sim X$$
 
 
 
-Exemple de variables binaires à expliquer : 
+Exemples de variables binaires à expliquer : 
   
   - Le sexe en fonction du poids (regression logistique simple)
   - Maladie coronarienne en fonction d’HTA et cholestérol
@@ -14,7 +14,7 @@ Exemple de variables binaires à expliquer :
   - Consommation d’un bien selon variables sociodémographiques
   - Risque d’accoucher d’un bébé de faible poids (<2500g) en fonction de l’âge de la mère, du poids, du tabagisme.
   - le sexe en fonction de l’expression des gènes (challenge *sexpred*)
-  - l’histoplogie en fonction de l’expression des gènes (challenge *histpred*)
+  - l’histologie en fonction de l’expression des gènes (challenge *histpred*)
   - la survie à 24 mois en fonction de l’expression des gènes (challenge *virpred*)
 
 
@@ -41,7 +41,7 @@ résumé par :
 
 $$\mathbb{P}(Y=k)=p^k(1-p)^{1-k}, k \in \{0,1\}$$ 
 
-**Note** : si on considére $p$ constant (indépendant de $x$), la valeur de $p$ qui maximise la vraissamblance des observations est la proportion de 1 dans les observations (*exercice : proposer une démonstration*). 
+**Note** : si on considére $p$ constant (indépendant de $x$), la valeur de $p$ qui maximise la vraisemblance des observations est la proportion de 1 dans les observations (*exercice : proposer une démonstration*). 
 
 ### Approche naïve avec la regression lineaire
 
@@ -276,10 +276,10 @@ legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
 legend("bottomright", c("Y=Pi(X)", "1 - l(xi, yi)"), col=1:2, lty=1, cex=0.6)
 
 points(d$Bwt[2], s[2], col=2, pch=16)
-arrows(d$Bwt[2], 1, d$Bwt[2], py1x(d$Bwt,m)[2], col=adjustcolor(2, alpha.f=0.5), length=0.05, lwd=3)
+arrows(d$Bwt[2], 0, d$Bwt[2], py1x(d$Bwt,m)[2], col=adjustcolor(2, alpha.f=0.5), length=0.05, lwd=3)
 
-points(d$Bwt[16], s[16], col=2, pch=16)
-arrows(d$Bwt[16], 0, d$Bwt[16], py1x(d$Bwt,m)[16], col=adjustcolor(2, alpha.f=0.5), length=0.05, lwd=3)
+points(d$Bwt[110], s[110], col=2, pch=16)
+arrows(d$Bwt[110], 1, d$Bwt[110], py1x(d$Bwt,m)[110], col=adjustcolor(2, alpha.f=0.5), length=0.05, lwd=3)
 
 plot(d$Bwt, s, main="Sex~Bwt", xlab="Bwt", ylab="Sex")
 arrows(d$Bwt, s, d$Bwt, py1x(d$Bwt,m), col=adjustcolor(4, alpha.f=0.2), length=0.05, lwd=3)
@@ -300,22 +300,22 @@ On estime $\beta$ par **maximum de vraisemblance**.
 
 La vraisemblance conditionnelle est :
 
-$$\mathcal L _n(\beta) = \prod_{i=1}^{n} l(x_i, y_i) = \prod_{i=1}^{n} \pi(x_i)^{y_i}(1-\pi(x_i))^{1-y_i} = \prod_{i=1}^{n} \Big(\frac{\pi(x_i)}{1-\pi(x_i)}\Big)^{y_i}(1-\pi(x_i))$$
+$$\mathcal{L}_n(\beta) = \prod_{i=1}^{n} l(x_i, y_i) = \prod_{i=1}^{n} \pi(x_i)^{y_i}(1-\pi(x_i))^{1-y_i} = \prod_{i=1}^{n} \Big(\frac{\pi(x_i)}{1-\pi(x_i)}\Big)^{y_i}(1-\pi(x_i))$$
 
 
 En passant au logarithme, on a :
 
-$$log(\mathcal L _n(\beta)) = \sum_{i=1}^{n}\Big[ y_i * log \Big(\frac{\pi(x_i)}{1-\pi(x_i)}\Big) + log(1-\pi(x_i))\Big] $$
+$$log(\mathcal{L}_n(\beta)) = \sum_{i=1}^{n}\Big[ y_i * log \Big(\frac{\pi(x_i)}{1-\pi(x_i)}\Big) + log(1-\pi(x_i))\Big] $$
 
 Cette fonction contient des valeurs observées $y_i$ et des valeurs prédites $\pi(x_i)$ qui dépendent de $\beta$
 
-On maximise cette fonction en trouvant la valeur de $\beta$ *pour laquelle la dérivée (par rapport à $\beta$) est nulle* ($\mathcal L _n’(\beta) = 0$), definissant ainsi : 
+On maximise cette fonction en trouvant la valeur de $\beta$ *pour laquelle la dérivée (par rapport à $\beta$) est nulle* ($\mathcal{L}_n’(\beta) = 0$), definissant ainsi : 
 
-$$\widehat{\beta}_n = argmax( \mathcal L _n(\beta) )$$
+$$\widehat{\beta}_n = argmax( \mathcal{L}_n(\beta) )$$
 
 **Remarques**  :
 
-Il n’existe pas de **solution analytique** de $\mathcal L _n’(\beta) = 0$
+Il n’existe pas de **solution analytique** de $\mathcal{L}_n’(\beta) = 0$
 L’estimateur $\widehat{\beta}$ est obtenus **par approximation**, les résultats peuvent différer en fonction de l’algorithme utilisé. 
 Exemple d’algorithme simple : 
 
