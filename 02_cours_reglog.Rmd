@@ -1,0 +1,183 @@
+# Exercice : X univariée qualitative
+
+On s’intéresse au rôle de différents facteurs dans la survenue de cancer pédiatriques (chez l’enfant).
+
+Ce premier tableau présente la distribution de cancer de l’enfant selon le statut tabagique des mères : 
+
+
+```{r results="verbatim"}
+tabac = matrix(c(1128, 289, 487, 133), 2)
+# tabac = matrix(c(856, 213, 399, 86), 2)
+rownames(tabac) = c("non_fumeuse", "fumeuse")
+colnames(tabac) = c("non_malade", "malade")
+print(tabac)
+```
+
+1. Identifiez la variable expliquée Y et la variable explicative $X_1$, ainsi que les valeurs qu’elles peuvent prendre.
+
+La variable expliquée $Y$ est *la survenu d’un cancer chez l’enfant*, elle prend ses valeurs dans *non_malade*, *malade*.
+
+La variable explicative $X_1$ *le statut tabagique*, elle prend ses valeurs dans *non_fumeuse* et *fumeuse*.
+
+2. Exprimez l’OR associé à $X_1$ en fonction des probabilités conditionnelles de Y sachant $X_1$, puis en fonction des valeurs du tableau.
+
+
+
+\begin{eqnarray}
+\mathbb{P}(Y=\text{malade}|X_1) &=& \pi (X_1) \\
+
+\mathbb{P}(Y=\text{malade}|X_1=\text{fumeuse})
+  &=& \pi_\text{fumeuse} \\
+  &=& \frac{133}{133+289}\\
+
+\mathbb{P}(Y=\text{malade}|X_1=\text{non_fumeuse})
+  &=& \pi_\text{non_fumeuse} \\
+  &=& \frac{487}{1128+487} \\
+\end{eqnarray}
+
+
+\begin{eqnarray}
+Odds(\text{fumeuse})
+&=& \frac{\pi_\text{fumeuse}}{1-\pi_\text{fumeuse}} \\
+&=& \frac{\frac{133}{133+289}}{1-\frac{133}{133+289}} \\
+&=& \frac{\frac{133}{133+289}}{\frac{289}{133+289}} \\
+&=& \frac{133}{289}  \simeq \frac{1}{2}\\
+\end{eqnarray}
+
+
+\begin{eqnarray}
+Odds(\text{non_fumeuse})
+  &=& \frac{\pi_\text{non_fumeuse}}{1-\pi_\text{non_fumeuse}} \\
+  &=& \frac{487}{1128} \simeq \frac{1}{2}\\
+\end{eqnarray}
+
+
+\begin{eqnarray}
+OR_{\text{fumeuse}/\text{non_fumeuse}}
+  &=& \frac{Odds(\text{fumeuse})}{Odds(\text{non_fumeuse})}\\
+  &=& \frac{133}{289} \frac{1128}{487} =  1.07 \simeq 1\\
+\end{eqnarray}
+
+
+
+3. Caluclez l’OR associé à $X_1$. Interprétez.
+
+On observe pas de risque particulier de cancer pédiatrique chez les enfants de femme fumeuses.
+
+```{r}
+dd = data.frame(
+  Y =  c(rep("non_fumeuse", 1128), rep("non_fumeuse", 487), rep("fumeuse"   , 289), rep("fumeuse", 133)),
+  X1 = c(rep("non_malade" , 1128), rep("malade"     , 487), rep("non_malade", 289), rep("malade" , 133))
+)
+
+m = glm(Y~X1, dd, family = binomial(logit))
+m$coefficients
+summary(m)
+
+# 4. Donnez l’expression analytique du modèle envisagé.
+#
+# 5. Sachant que odd(X = x) = exp(βx) et que var(β) = 1/a + 1/b + 1/c + 1/d, en déduire la valeur de β et de la variance de β.
+# 6. Calculez l’intervalle de confiance de β puis de l’OR. Conclure sur sa significativité.
+# 7. Après avoir posées les hypothèses H0 et H1 (en fonction de β et de OR), calculez la statistique du test de Wald pour la variable $X_1$. Conclure sur sa significativité.
+# La variable expliquée $Y$ est *la survenu d’un cancer chez l’enfant*, elle prend ses valeurs dans *non_malade*, *malade*.
+
+
+# La variable explicative $X_1$ *le statut tabagique*, elle prend ses valeurs dans *non_fumeuse* et *fumeuse*.
+#
+#
+#
+# Calcul de l’*Odds Ratis* (OR) associé à $X_1$  :
+#
+#
+# \begin{eqnarray}
+# \mathbb{P}(Y=\text{malade}|X_1) &=& \pi (X_1) \\
+#
+# \mathbb{P}(Y=\text{malade}|X_1=\text{fumeuse})
+#   &=& \pi_\text{fumeuse} \\
+#   &=& \frac{133}{133+289}\\
+#
+# \mathbb{P}(Y=\text{malade}|X_1=\text{non_fumeuse})
+#   &=& \pi_\text{non_fumeuse} \\
+#   &=& \frac{487}{1128+487} \\
+# \end{eqnarray}
+#
+#
+# \begin{eqnarray}
+# Odds(\text{fumeuse})
+# &=& \frac{\pi_\text{fumeuse}}{1-\pi_\text{fumeuse}} \\
+# &=& \frac{\frac{133}{133+289}}{1-\frac{133}{133+289}} \\
+# &=& \frac{\frac{133}{133+289}}{\frac{289}{133+289}} \\
+# &=& \frac{133}{289}  \simeq \frac{1}{2}\\
+# \end{eqnarray}
+#
+#
+# \begin{eqnarray}
+# Odds(\text{non_fumeuse})
+#   &=& \frac{\pi_\text{non_fumeuse}}{1-\pi_\text{non_fumeuse}} \\
+#   &=& \frac{487}{1128} \simeq \frac{1}{2}\\
+# \end{eqnarray}
+#
+#
+# \begin{eqnarray}
+# OR_{\text{fumeuse}/\text{non_fumeuse}}
+#   &=& \frac{Odds(\text{fumeuse})}{Odds(\text{non_fumeuse})}\\
+#   &=& \frac{133}{289} \frac{1128}{487} \simeq 1\\
+# \end{eqnarray}
+#
+#
+# On observe pas de risque particulier de cancer pédiatrique chez les enfants de femme fumeuses.
+```
+
+
+Ce second tableau présente se focalise sur la distribution de cancer de l’enfant selon le statut tabagique chez des mères ayant bu de l’alcool pendant la grossesse : 
+
+
+```{r results="verbatim"}
+tabac = matrix(c(272, 76, 88, 47), 2)
+rownames(tabac) = c("non_fumeuse", "fumeuse")
+colnames(tabac) = c("non_malade", "malade")
+print(tabac)
+```
+
+
+De la même manière on obtient
+
+\begin{eqnarray}
+OR_{\text{fumeuse}/\text{non_fumeuse}}
+  &=& \frac{Odds(\text{fumeuse})}{Odds(\text{non_fumeuse})}\\
+  &=& \frac{47}{76} \frac{272}{88} = 1.91 \simeq 2\\
+\end{eqnarray}
+
+
+Chez les enfants de mères fumeuses ayant pas bu de l’alcool pendant la grossesse, on observe un risque plus élevé de cancer pédiatrique.
+
+
+
+```{r}
+dd = data.frame(
+  Y =  c(rep("non_fumeuse", 272), rep("non_fumeuse", 88), rep("fumeuse"   , 76), rep("fumeuse", 47)),
+  X1 = c(rep("non_malade" , 272), rep("malade"     , 88), rep("non_malade", 76), rep("malade" , 47))
+)
+
+m = glm(Y~X1, dd, family = binomial(logit))
+m$coefficients
+summary(m)
+
+
+```
+
+4. Qu’en est-il pour cette sous population ?
+
+A partir des deux proemiers tableaux on en déduit ce troisième tableaux présentant la distribution de cancer de l’enfant selon le statut tabagique chez des mères n’ayant bu de d’alcool pendant la grossesse.
+
+
+```{r results="verbatim"}
+tabac = matrix(c(856, 213, 399, 86), 2)
+rownames(tabac) = c("non_fumeuse", "fumeuse")
+colnames(tabac) = c("non_malade", "malade")
+print(tabac)
+```
+
+5. Qu’en est-il pour cette sous population ?
+
+
