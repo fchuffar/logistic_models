@@ -17,7 +17,7 @@ Sous certaines hypothèses (*exercice : lesquelles ?*), l’estimateur des moind
 - La valeur estimée (ajustée) de Y est $\widehat{y}_i =  \widehat{\beta}_0 + \widehat{\beta}_1X_1 +  ... + \widehat{\beta}_pX_p$
 - Les résidus sont estimés par $e_i = y_i -\widehat{y}_i$
 - La variance du terme d’erreur est estimée par $s^2 = \frac{1}{n-2} \sum_{i=1}^{n}{e_i^2}$
-- Le $R^2$ represente le pourcentage de variance expliquée $R^2 = \frac{\sum_{i}{(y_i -\overline{y}_i)^2 - e_i^2}}{\sum_{i=1}^{n}{(y_i -\overline{y}_i)^2}}$ 
+- Le $R^2$ représente le pourcentage de variance expliquée $R^2 = \frac{\sum_{i}{(y_i -\overline{y}_i)^2 - e_i^2}}{\sum_{i=1}^{n}{(y_i -\overline{y}_i)^2}}$ 
 
 
 

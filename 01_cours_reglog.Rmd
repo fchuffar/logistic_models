@@ -1,6 +1,6 @@
 # Regression logistique
 
-On cherche une relation entre la variable une **variable binaire** $Y$ (observée) et un ensemble de la variable explicative $X$ continue. 
+On cherche une relation entre une **variable binaire** $Y$ (observée, à expliqué) et un ensemble de variables explicatives $X$ (quantitative ou qualitatives). 
 
 $$Y \sim X$$
 
