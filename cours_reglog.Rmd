@@ -1,0 +1,96 @@
+---
+title: "Régression Logistique"
+subtitle: "M2 SSD"
+author: "Florent Chuffart & Magali Richard"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    number_sections: true
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse=TRUE, comment = "#>", fig.width=9, fig.height=6, eval=TRUE, echo=FALSE, results="hide")
+options(contrasts=c("contr.sum", "contr.poly"))
+```
+
+---
+
+# Avant Propos
+
+## Evaluations
+
+ - individuelle via un questionnaire à la fin de chaque séance 
+
+   - Evaluation 1 https://forms.gle/s9Go7tm9EW7f8vE19
+   - Evaluation 2 
+   - Evaluation 3 
+   - Evaluation 4 
+ 
+ - en équipe lors d‘un *data challenge* à l’issue des 4 séances de regression logistique et du cours surles modèles de survie.
+
+## Pré-requis
+ 
+ - R https://cran.r-project.org 
+ - RStudio https://www.rstudio.com
+
+## Cours 
+
+- https://github.com/fchuffar/logistic_models
+
+
+## Organisation prévisionnelle
+
+Séance 1 - 3h  Régression logistique 1/2
+
+Séance 2 - 3h  Régression logistique 2/2
+
+Séance 3 - 3h  Apprentissage automatique / validation croisée (Data challenge *histpred2.0*) 
+
+Séance 4 - 3h  Apprentissage automatique / validation croisée (Correction)
+
+
+---
+
+
+
+```{r child = '00_cours_reglog.Rmd', eval=TRUE}
+```
+
+
+```{r child = '01_cours_reglog.Rmd', eval=TRUE}
+```
+
+
+```{r child = '02_cours_reglog.Rmd', eval=TRUE}
+```
+
+
+
+
+
+
+
+
+---
+
+# Notes
+
+Ce cours s’inspire des références suivantes :
+
+- Regression Logistique (Lydiane Agier)
+- [StatQuest: Logistic Regression] (https://youtube.com/playlist?list=PLblh5JKOoLUKxzEP5HA2d-Li7IJkHfXSe)
+
+---
+
+# Informations de session
+
+```{r, results="verbatim"}
+sessionInfo()
+```
+
+
+

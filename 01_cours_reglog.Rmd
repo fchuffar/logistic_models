@@ -1,0 +1,394 @@
+# Regression logistique
+
+On cherche une relation entre la variable une **variable binaire** $Y$ (observée) et un ensemble de la variable explicative $X$ continue. 
+
+$$Y \sim X$$
+
+
+
+Exemple de variables binaires à expliquer : 
+  
+  - Le sexe en fonction du poids (regression logistique simple)
+  - Maladie coronarienne en fonction d’HTA et cholestérol
+  - Survenue de cancer en fonction d’expositions chimiques
+  - Consommation d’un bien selon variables sociodémographiques
+  - Risque d’accoucher d’un bébé de faible poids (<2500g) en fonction de l’âge de la mère, du poids, du tabagisme.
+  - le sexe en fonction de l’expression des gènes (challenge *sexpred*)
+  - l’histoplogie en fonction de l’expression des gènes (challenge *histpred*)
+  - la survie à 24 mois en fonction de l’expression des gènes (challenge *virpred*)
+
+
+
+
+## Construction du modèle logistique
+
+On considère dans ce paragraphe la regression logistique univariée : $Y \sim x$, avec x une variable quantitaive.
+
+On pose $Y$ la variable binaire, $x$ le vecteur de la variable explicative et **on veut modéliser : ** 
+
+$$E(Y|x) = \mathbb{P}(Y=1|x) = \pi (x)$$
+
+
+### Variable de Bernoulli
+
+Toute variable binaire peut être codée par 0 ou 1. 
+On considére alors cette variable comme une variable de Bernoulli qui suit la loi de probabilité de paramètre $p$ :
+ 
+$$\mathbb{P}(Y=1)=p$$
+$$\mathbb{P}(Y=0)=1-p$$ 
+
+résumé par :
+
+$$\mathbb{P}(Y=k)=p^k(1-p)^{1-k}, k \in \{0,1\}$$ 
+
+**Note** : si on considére $p$ constant (indépendant de $x$), la valeur de $p$ qui maximise la vraissamblance des observations est la proportion de 1 dans les observations (*exercice : proposer une démonstration*). 
+
+### Approche naïve avec la regression lineaire
+
+Considérons que Y suit une loi de Bernoulli de paramètre $\pi (x)$ une fonction linéaire de $x$ : 
+
+$$\mathbb{P}(Y=1|x)=\pi (x) = \beta_0 + \beta_1 x$$
+
+Problème $\pi(x)$ prends des valeurs négatives et des valeurs supérieur à 1
+
+```{r}
+d = MASS::cats
+layout(1, respect=TRUE)
+s = as.numeric(d$Sex) - 1
+plot(d$Bwt, s, main="Regression linéaire (Sex~Bwt)", xlab="Bwt", ylab="Sex", ylim=c(0,1.5))
+m = lm(s~d$Bwt)
+abline(m, col=2, lwd=2)
+# abline(h=0.5, col="grey", lwd=2)
+arrows(d$Bwt, s, d$Bwt, s-m$residuals, col=adjustcolor(4, alpha.f=0.2), length=0.1, lwd=2)
+legend("bottomright",c("regression line", "residuals"), col=c(2,4), lty=1, cex=0.6)
+```
+
+
+### la fonction logit
+
+\begin{eqnarray}
+              \text{logit: } ]0,1[ & \rightarrow & \mathbb{R} \\
+                                 x & \rightarrow & logit(x)  =  log(\frac{x}{1-x}) \\ 
+\end{eqnarray}
+
+\begin{eqnarray}
+              \text{logit$^{-1}$: } \mathbb{R}& \rightarrow &  ]0,1[  \\
+                      x & \rightarrow & logit^{-1}(x) = \frac{1}{1+e^{-x}}  
+\end{eqnarray}
+
+```{r}
+layout(matrix(1:2, 1), respect=TRUE)
+x = 0:100/100
+plot(x, log(x/(1-x)), main="logit", type="l")
+x = seq(-4, 4,  length.out=100)
+plot(x, 1 / (1+exp(-x)), main="logit^-1", type="l")
+```
+
+$$ \lim_{x\to0} logit(x) = -\infty \ \ \ \ \ \ \ \ \ \  \lim_{x\to1} logit(x) = +\infty $$
+
+$$ \lim_{x\to-\infty} logit^{-1}(x) = 0 \ \ \ \ \ \ \ \ \ \  \lim_{x\to+\infty} logit^{-1}(x) = 1 $$
+
+
+
+
+
+
+### Présentation du modèle logistique simple
+
+Considérons que Y suit une loi de Bernoulli de paramètre $\pi (x)$ telle que :
+
+$$\mathbb{P}(Y=1|x) = \pi(x) = logit^{-1}(\beta_0 + \beta_1 x)$$ 
+
+On appelle $\pi(x)$, le prédicteur de Y en fonction de x.
+
+```{r}
+layout(1, respect=TRUE)
+plot(d$Bwt, s, main="Sex~Bwt", xlab="Bwt", ylab="Sex")
+m = glm(d$Sex~d$Bwt, family = binomial(logit))
+m$coefficients
+logitinv = function(x) 1/(1 + exp(-x))
+x = seq(min(d$Bwt), max(d$Bwt), length.out=30)
+lines(x, logitinv(m$coefficients[[1]] + m$coefficients[[2]]*x), col=2, lwd=2)
+py1x = function(t,m) {
+  x = m$coefficients[[1]] + m$coefficients[[2]]*t
+  1/(1 + exp(-x))
+}
+arrows(d$Bwt, s, d$Bwt, py1x(d$Bwt,m), col=adjustcolor(4, alpha.f=0.2), length=0.05, lwd=3)
+legend("bottomright", c("Y=Pi(X)=logit^-1(b.X)", "1 - P(Y=y_i|X=x_i)"), col=c(2,4), lty=1, cex=0.6)
+```
+
+On **généralise** aisement le modèle logistique pour des variables explicatives **multivariées** $X=(X_1,...,X_p))$, $X_i$ pouvant être **qualitatives** ou **quantitaves**, $\beta=(\beta_0, \beta_1, ..., \beta_p)$ : 
+
+
+$$\mathbb{P}(Y=1|X) = \pi(X) = logit^{-1}(\beta X)$$ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Mesures d'interêt
+
+On définit les **Odds** :
+
+$$Odds(X) = \frac{\pi(X)}{1-\pi(X)}$$
+
+Ce qui correspond à la cote d’un événement, la probabilité que l’événement se produise par rapport à la probabilité qu’il ne se produise pas. 
+
+Ainsi : 
+
+\begin{eqnarray}
+\mathbb{P}(Y=1|X) &=& \pi(X) &=& logit^{-1}(\beta X) \\
+logit(\mathbb{P}(Y=1|X)) &=& logit(\pi(X)) &=& \beta X \\
+&&log(\frac{\pi(x)}{1-\pi(x)}) &=& \beta X \\
+&&log(Odds(X)) &=& \beta X \\
+&&Odds(X) &=& e^{\beta X}
+
+\end{eqnarray}
+
+Notons au passage que $logit(\mathbb{P}(Y=1|X)) = log(Odds(X))$ est une varible aléatoire modélisée par un modèle linéaire. 
+C’est à partir de ce modèle linéaire que l’on obtient les p-valeurs du modèle logistique. La regression logistique est un modéle linéaire géneralisé (*glm*) qui utilise la fonction *logit* comme fontion de lien.
+
+
+```{r echo=TRUE, results="verbatim"}
+m = glm(d$Sex~d$Bwt, family = binomial(logit))
+m$coefficients
+summary(m)
+```
+
+On définit définit les **Odds Ratio** :
+
+$$OR_{u/v} = \frac{odd(X = u)}{odd(X=v)} = e^{\beta (u-v)}$$
+
+$OR$ estime par exemple le rapport malades/non-malades entre deux populations (facilement compréhensible quand $X$ est qualitatif).
+
+$OR$ est directement calculable à partir des coefficients de la régression $\beta$, il permet d’interpréter les $\widehat{\beta_k}$ et de mesurer l‘effet de la variable $X_k$ sur le modèle.
+
+
+
+
+
+On définit définit le **risque relatif** :
+
+$$ RR_{u/v} = \frac{\pi(X = u)}{\pi(X=v)} = \frac{P(Y=1|X=u)}{P(Y=1|X=v)} $$
+
+Note : si $p$ est petit alors $\frac{p}{1-p} \simeq p$ et l’Odds Ratio est proche du risque relatif.
+
+
+$RR$ estime le risque (*i.e.* la probabilité) d’être par exemple malade.
+
+$OR$ et $RR$ donnent la même indication sur la relation entre $Y$ et $X$ :
+
+1) Si $RR_{u/v}$ (ou $OR_{u/v}$) $>1$ alors il y a plus de risque de $Y=1$ si $X=u$ que si $X=v$
+2) Si $RR_{u/v}$ (ou $OR_{u/v}$) $<1$ alors il y a moins de risque de $Y=1$ si $X=u$ que si $X=v$
+3) Si $RR_{u/v}$ (ou $OR_{u/v}$) $=1$ alors $Y$ n’est pas influencée par $X=u$ vs. $X=v$ (i.e. Y indépendant des catégories $u$ et $v$ de $X$)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Estimation des paramètres
+
+
+On considère dans ce paragraphe la regression logistique multivariée.
+
+Comme en régression linéaire, l’objet de cette modélisation est *d’estimer les coefficients $\beta_0$ et $\beta_1$*
+
+
+
+### Vraisemblance
+
+**Définition** : Probabilité d’observer les évènements $y_i$ en considérant le modèle $\mathcal{M}$
+
+**Important** : la vraisemblance dépend
+
+  - des observations ($y_i$)
+  - du modèle $\mathcal{M}$
+
+**Notations** : 
+ 
+- les covariables globales théoriques $X=(X_1,...,X_p)$
+- les covariables globales observées $x=(x_1,...,x_p)$. 
+- les covariables individuelles observées $x_i=(x_{1i},...,x_{pi})$
+
+Le modèle conditionnel de $Y$ sachant $X$ suit une loi de Bernoulli de paramètres $\pi(x)$ : 
+
+$$E(Y|X = x) \sim \mathcal B (\pi(x))$$
+
+
+### Contribution des observations
+
+Pour l’observation $i$, la contribution à la vraisemblance est donc (Bernoulli) : 
+
+$$l(x_i, y_i) = P(y_i = 1|x_i)^{y_i} (1-P(y_i=1|x_i))^{1-y_i} = \pi(x_i)^{y_i}(1-\pi(x_i))^{1-y_i} $$
+
+si $y_i = 1$ : 
+\begin{eqnarray}
+l(x_i, 1) &=& P(y_i = 1|x_i)^1 (1-P(y_i=1|x_i))^0 &=& \pi(x_i)^1 (1-\pi(x_i))^0 \\
+&=& P(y_i = 1|x_i) 1 &=& \pi(x_i) 1 \\
+&=& P(y_i = 1|x_i) &=& \pi(x_i) \\
+\end{eqnarray}
+
+si $y_i = 0$ : 
+\begin{eqnarray}
+l(x_i, 0) &=& P(y_i = 1|x_i)^0 (1-P(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \\
+&=& 1 (1-P(y_i=1|x_i)) &=& 1 (1-\pi(x_i)) \\ 
+&=& 1-P(y_i=1|x_i) &=& 1-\pi(x_i) \\ 
+\end{eqnarray}
+
+
+```{r}
+py1x = function(t,m) {
+  x = m$coefficients[[1]] + m$coefficients[[2]]*t
+  1/(1 + exp(-x))
+}
+d[c(2, 16),c("Bwt", "Sex")]
+layout(matrix(1:2, 1), respect=TRUE)
+plot(d$Bwt, s, main="Sex~Bwt", xlab="Bwt", ylab="Sex")
+# \mathbb{P}(Y=1|X) = logitinv(a + b.x)
+m = glm(d$Sex~d$Bwt, family = binomial(logit))
+m$coefficients
+logitinv = function(x) 1/(1 + exp(-x))
+x = seq(min(d$Bwt), max(d$Bwt), length.out=30)
+lines(x, logitinv(m$coefficients[[1]] + m$coefficients[[2]]*x), col=1, lwd=2)
+legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
+legend("bottomright", c("Y=Pi(X)", "1 - l(xi, yi)"), col=1:2, lty=1, cex=0.6)
+
+points(d$Bwt[2], s[2], col=2, pch=16)
+arrows(d$Bwt[2], 1, d$Bwt[2], py1x(d$Bwt,m)[2], col=adjustcolor(2, alpha.f=0.5), length=0.05, lwd=3)
+
+points(d$Bwt[16], s[16], col=2, pch=16)
+arrows(d$Bwt[16], 0, d$Bwt[16], py1x(d$Bwt,m)[16], col=adjustcolor(2, alpha.f=0.5), length=0.05, lwd=3)
+
+plot(d$Bwt, s, main="Sex~Bwt", xlab="Bwt", ylab="Sex")
+arrows(d$Bwt, s, d$Bwt, py1x(d$Bwt,m), col=adjustcolor(4, alpha.f=0.2), length=0.05, lwd=3)
+legend("bottomright","1 - P(Y=yi|X=xi)", col=4, lty=1, cex=0.6)
+```
+
+
+
+
+
+
+
+### Maximisation de la vraisemblance
+
+Le modèle s’écrit:  $logit(E(Y|X_1,...,X_p)) = \beta_0 + \beta_1X_1+...+\beta_pX_p$ avec $\beta = (\beta_0,\beta_1, ..., \beta_p)$ inconnus.
+
+On estime $\beta$ par **maximum de vraisemblance**.
+
+La vraisemblance conditionnelle est :
+
+$$\mathcal L _n(\beta) = \prod_{i=1}^{n} l(x_i, y_i) = \prod_{i=1}^{n} \pi(x_i)^{y_i}(1-\pi(x_i))^{1-y_i} = \prod_{i=1}^{n} \Big(\frac{\pi(x_i)}{1-\pi(x_i)}\Big)^{y_i}(1-\pi(x_i))$$
+
+
+En passant au logarithme, on a :
+
+$$log(\mathcal L _n(\beta)) = \sum_{i=1}^{n}\Big[ y_i * log \Big(\frac{\pi(x_i)}{1-\pi(x_i)}\Big) + log(1-\pi(x_i))\Big] $$
+
+Cette fonction contient des valeurs observées $y_i$ et des valeurs prédites $\pi(x_i)$ qui dépendent de $\beta$
+
+On maximise cette fonction en trouvant la valeur de $\beta$ *pour laquelle la dérivée (par rapport à $\beta$) est nulle* ($\mathcal L _n’(\beta) = 0$), definissant ainsi : 
+
+$$\widehat{\beta}_n = argmax( \mathcal L _n(\beta) )$$
+
+**Remarques**  :
+
+Il n’existe pas de **solution analytique** de $\mathcal L _n’(\beta) = 0$
+L’estimateur $\widehat{\beta}$ est obtenus **par approximation**, les résultats peuvent différer en fonction de l’algorithme utilisé. 
+Exemple d’algorithme simple : 
+
+1) initialisation des valeurs de $\beta$ de manière aléatoire et calcule la vraisemblance associée
+2) modification de la valeur de $\beta$, est-ce que cette nouvelle valeur améliorent la vraisemblance ? 
+3) si cette nouvelle valeur améliore la vraisemblance on la conserve sinon on la rejette
+4) itération jusqu’à convergeance (la vraisemblance devient stable, critère d’arrêt)
+
+
+```{r}
+layout(matrix(1:2, 1), respect=TRUE)
+plot(d$Bwt, s, main="Sex~Bwt, coef[1] step by 1", xlab="Bwt", ylab="Sex")
+# \mathbb{P}(Y=1|X) = logitinv(a + b.x)
+x = seq(min(d$Bwt), max(d$Bwt), length.out=30)
+m = glm(d$Sex~d$Bwt, family = binomial(logit))
+m$coefficients
+coefs = m$coefficients
+lines(x, logitinv(coefs[[1]] + coefs[[2]]*x), col=1, lwd=2)
+coefs[1] = coefs[1] - 5 
+for (i in 1:10) {
+  lines(x, logitinv(coefs[[1]] + coefs[[2]]*x), col=1, lwd=2, lty=2)
+  coefs[1] = coefs[1] + 1
+}
+
+
+plot(d$Bwt, s, main="Sex~Bwt, coef[2] step by 0.01", xlab="Bwt", ylab="Sex")
+# \mathbb{P}(Y=1|X) = logitinv(a + b.x)
+x = seq(min(d$Bwt), max(d$Bwt), length.out=30)
+m = glm(d$Sex~d$Bwt, family = binomial(logit))
+m$coefficients
+coefs = m$coefficients
+lines(x, logitinv(coefs[[1]] + coefs[[2]]*x), col=1, lwd=2)
+coefs[2] = coefs[2] - 1 
+for (i in 1:10) {
+  lines(x, logitinv(coefs[[1]] + coefs[[2]]*x), col=1, lwd=2, lty=2)
+  coefs[2] = coefs[2] + 0.2  
+}
+```
+
+
+### Propriétés de l’estimateur
+
+Asymptotiquement (i.e quand n tend vers l’infini), l’estimateur du maximum de vraisemblance:
+
+1) existe et est unique
+2) est sans biais  (i.e. il tend vers sa valeur réelle)
+3) est de distribution normale
+4) est efficace (i.e. de variance minimale parmi tous les estimateurs sans biais obtenus avec d’autres méthodes).
+
+- Ainsi: $\lim_{n\to\infty} \sqrt{n}(\widehat{\beta}-\beta) \rightarrow N(0,\Sigma^{-1})$ avec $\Sigma^{-1}$ la matrice de variance-covariance de $\beta$ 
+
+
+- On en déduit les **intervalles de confiance** pour $\beta_k$:
+
+$$ IC(\widehat{\beta}) = \Big[\widehat{\beta_k} -t_{1-\alpha/2,n-2} * \sqrt{\widehat{var}(\widehat{\beta_k})} ; \widehat{\beta_k}+t_{1-\alpha/2,n-2} * \sqrt{\widehat{var}(\widehat{\beta_k})} \Big]$$
+
+Avec  $t_{1-\alpha/2,n-2}$ le quantile de niveau $1-\alpha/2$ de la loi de student à (n-2) degrés de liberté 
+
+En pratique approximé dès que $n>30$ par $u_{1-\alpha/2}$ le quantile de niveau $1-\alpha/2$ de la loi normale
+
+
+
+
+
+
+
+
+## Valeurs prédites et résidus
+
+A partir de $\widehat{\beta}$ , on peut calculer:
+
+  - les **valeurs prédites** $\pi(X)$, *i.e.*, la probabilité estimée de $Y=1$ pour chaque individu en fonction de ses caractéristiques
+  - les **résidus** $\epsilon = Y - \widehat{\pi}(X)$, que nous avons précedemment reliés à la vraisemblance des observations et que nous allons relier l’adéquation du modèle avec le test de rapport de vraisemblance.
+
+
+
