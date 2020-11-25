@@ -1,183 +1,176 @@
-# Exercice : X univariée qualitative
-
-On s’intéresse au rôle de différents facteurs dans la survenue de cancer pédiatriques (chez l’enfant).
-
-Ce premier tableau présente la distribution de cancer de l’enfant selon le statut tabagique des mères : 
+# Estimation des paramètres
 
 
-```{r results="verbatim"}
-tabac = matrix(c(1128, 289, 487, 133), 2)
-# tabac = matrix(c(856, 213, 399, 86), 2)
-rownames(tabac) = c("non_fumeuse", "fumeuse")
-colnames(tabac) = c("non_malade", "malade")
-print(tabac)
-```
+On considère dans ce paragraphe la regression logistique multivariée.
 
-1. Identifiez la variable expliquée Y et la variable explicative $X_1$, ainsi que les valeurs qu’elles peuvent prendre.
-
-La variable expliquée $Y$ est *la survenu d’un cancer chez l’enfant*, elle prend ses valeurs dans *non_malade*, *malade*.
-
-La variable explicative $X_1$ *le statut tabagique*, elle prend ses valeurs dans *non_fumeuse* et *fumeuse*.
-
-2. Exprimez l’OR associé à $X_1$ en fonction des probabilités conditionnelles de Y sachant $X_1$, puis en fonction des valeurs du tableau.
+Comme en régression linéaire, l’objet de cette modélisation est *d’estimer les coefficients $\beta_0$ et $\beta_1$*
 
 
 
+## Vraisemblance
+
+**Définition** : Probabilité d’observer les évènements $y_i$ en considérant le modèle $\mathcal{M}$
+
+**Important** : la vraisemblance dépend
+
+  - des observations ($y_i$)
+  - du modèle $\mathcal{M}$
+
+**Notations** : 
+ 
+- les covariables globales théoriques $X=(X_1,...,X_p)$
+- les covariables globales observées $x=(x_1,...,x_p)$. 
+- les covariables individuelles observées $x_i=(x_{1i},...,x_{pi})$
+
+Le modèle conditionnel de $Y$ sachant $X$ suit une loi de Bernoulli de paramètres $\pi(x)$ : 
+
+$$E(Y|X = x) \sim \mathcal B (\pi(x))$$
+
+
+## Contribution des observations
+
+Pour l’observation $i$, la contribution à la vraisemblance est donc (Bernoulli) : 
+
+$$l(x_i, y_i) = P(y_i = 1|x_i)^{y_i} (1-P(y_i=1|x_i))^{1-y_i} = \pi(x_i)^{y_i}(1-\pi(x_i))^{1-y_i} $$
+
+si $y_i = 1$ : 
 \begin{eqnarray}
-\mathbb{P}(Y=\text{malade}|X_1) &=& \pi (X_1) \\
-
-\mathbb{P}(Y=\text{malade}|X_1=\text{fumeuse})
-  &=& \pi_\text{fumeuse} \\
-  &=& \frac{133}{133+289}\\
-
-\mathbb{P}(Y=\text{malade}|X_1=\text{non_fumeuse})
-  &=& \pi_\text{non_fumeuse} \\
-  &=& \frac{487}{1128+487} \\
+l(x_i, 1) &=& P(y_i = 1|x_i)^1 (1-P(y_i=1|x_i))^0 &=& \pi(x_i)^1 (1-\pi(x_i))^0 \\
+&=& P(y_i = 1|x_i) 1 &=& \pi(x_i) 1 \\
+&=& P(y_i = 1|x_i) &=& \pi(x_i) \\
 \end{eqnarray}
 
-
+si $y_i = 0$ : 
 \begin{eqnarray}
-Odds(\text{fumeuse})
-&=& \frac{\pi_\text{fumeuse}}{1-\pi_\text{fumeuse}} \\
-&=& \frac{\frac{133}{133+289}}{1-\frac{133}{133+289}} \\
-&=& \frac{\frac{133}{133+289}}{\frac{289}{133+289}} \\
-&=& \frac{133}{289}  \simeq \frac{1}{2}\\
+l(x_i, 0) &=& P(y_i = 1|x_i)^0 (1-P(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \\
+&=& 1 (1-P(y_i=1|x_i)) &=& 1 (1-\pi(x_i)) \\ 
+&=& 1-P(y_i=1|x_i) &=& 1-\pi(x_i) \\ 
 \end{eqnarray}
-
-
-\begin{eqnarray}
-Odds(\text{non_fumeuse})
-  &=& \frac{\pi_\text{non_fumeuse}}{1-\pi_\text{non_fumeuse}} \\
-  &=& \frac{487}{1128} \simeq \frac{1}{2}\\
-\end{eqnarray}
-
-
-\begin{eqnarray}
-OR_{\text{fumeuse}/\text{non_fumeuse}}
-  &=& \frac{Odds(\text{fumeuse})}{Odds(\text{non_fumeuse})}\\
-  &=& \frac{133}{289} \frac{1128}{487} =  1.07 \simeq 1\\
-\end{eqnarray}
-
-
-
-3. Caluclez l’OR associé à $X_1$. Interprétez.
-
-On observe pas de risque particulier de cancer pédiatrique chez les enfants de femme fumeuses.
-
-```{r}
-dd = data.frame(
-  Y =  c(rep("non_fumeuse", 1128), rep("non_fumeuse", 487), rep("fumeuse"   , 289), rep("fumeuse", 133)),
-  X1 = c(rep("non_malade" , 1128), rep("malade"     , 487), rep("non_malade", 289), rep("malade" , 133))
-)
-
-m = glm(Y~X1, dd, family = binomial(logit))
-m$coefficients
-summary(m)
-
-# 4. Donnez l’expression analytique du modèle envisagé.
-#
-# 5. Sachant que odd(X = x) = exp(βx) et que var(β) = 1/a + 1/b + 1/c + 1/d, en déduire la valeur de β et de la variance de β.
-# 6. Calculez l’intervalle de confiance de β puis de l’OR. Conclure sur sa significativité.
-# 7. Après avoir posées les hypothèses H0 et H1 (en fonction de β et de OR), calculez la statistique du test de Wald pour la variable $X_1$. Conclure sur sa significativité.
-# La variable expliquée $Y$ est *la survenu d’un cancer chez l’enfant*, elle prend ses valeurs dans *non_malade*, *malade*.
-
-
-# La variable explicative $X_1$ *le statut tabagique*, elle prend ses valeurs dans *non_fumeuse* et *fumeuse*.
-#
-#
-#
-# Calcul de l’*Odds Ratis* (OR) associé à $X_1$  :
-#
-#
-# \begin{eqnarray}
-# \mathbb{P}(Y=\text{malade}|X_1) &=& \pi (X_1) \\
-#
-# \mathbb{P}(Y=\text{malade}|X_1=\text{fumeuse})
-#   &=& \pi_\text{fumeuse} \\
-#   &=& \frac{133}{133+289}\\
-#
-# \mathbb{P}(Y=\text{malade}|X_1=\text{non_fumeuse})
-#   &=& \pi_\text{non_fumeuse} \\
-#   &=& \frac{487}{1128+487} \\
-# \end{eqnarray}
-#
-#
-# \begin{eqnarray}
-# Odds(\text{fumeuse})
-# &=& \frac{\pi_\text{fumeuse}}{1-\pi_\text{fumeuse}} \\
-# &=& \frac{\frac{133}{133+289}}{1-\frac{133}{133+289}} \\
-# &=& \frac{\frac{133}{133+289}}{\frac{289}{133+289}} \\
-# &=& \frac{133}{289}  \simeq \frac{1}{2}\\
-# \end{eqnarray}
-#
-#
-# \begin{eqnarray}
-# Odds(\text{non_fumeuse})
-#   &=& \frac{\pi_\text{non_fumeuse}}{1-\pi_\text{non_fumeuse}} \\
-#   &=& \frac{487}{1128} \simeq \frac{1}{2}\\
-# \end{eqnarray}
-#
-#
-# \begin{eqnarray}
-# OR_{\text{fumeuse}/\text{non_fumeuse}}
-#   &=& \frac{Odds(\text{fumeuse})}{Odds(\text{non_fumeuse})}\\
-#   &=& \frac{133}{289} \frac{1128}{487} \simeq 1\\
-# \end{eqnarray}
-#
-#
-# On observe pas de risque particulier de cancer pédiatrique chez les enfants de femme fumeuses.
-```
-
-
-Ce second tableau présente se focalise sur la distribution de cancer de l’enfant selon le statut tabagique chez des mères ayant bu de l’alcool pendant la grossesse : 
-
-
-```{r results="verbatim"}
-tabac = matrix(c(272, 76, 88, 47), 2)
-rownames(tabac) = c("non_fumeuse", "fumeuse")
-colnames(tabac) = c("non_malade", "malade")
-print(tabac)
-```
-
-
-De la même manière on obtient
-
-\begin{eqnarray}
-OR_{\text{fumeuse}/\text{non_fumeuse}}
-  &=& \frac{Odds(\text{fumeuse})}{Odds(\text{non_fumeuse})}\\
-  &=& \frac{47}{76} \frac{272}{88} = 1.91 \simeq 2\\
-\end{eqnarray}
-
-
-Chez les enfants de mères fumeuses ayant pas bu de l’alcool pendant la grossesse, on observe un risque plus élevé de cancer pédiatrique.
-
 
 
 ```{r}
-dd = data.frame(
-  Y =  c(rep("non_fumeuse", 272), rep("non_fumeuse", 88), rep("fumeuse"   , 76), rep("fumeuse", 47)),
-  X1 = c(rep("non_malade" , 272), rep("malade"     , 88), rep("non_malade", 76), rep("malade" , 47))
-)
-
-m = glm(Y~X1, dd, family = binomial(logit))
+py1x = function(t,m) {
+  x = m$coefficients[[1]] + m$coefficients[[2]]*t
+  1/(1 + exp(-x))
+}
+d[c(2, 16),c("Bwt", "Sex")]
+layout(matrix(1:2, 1), respect=TRUE)
+plot(d$Bwt, s, main="Sex~Bwt", xlab="Bwt", ylab="Sex")
+# \mathbb{P}(Y=1|X) = logitinv(a + b.x)
+m = glm(d$Sex~d$Bwt, family = binomial(logit))
 m$coefficients
-summary(m)
+logitinv = function(x) 1/(1 + exp(-x))
+x = seq(min(d$Bwt), max(d$Bwt), length.out=30)
+lines(x, logitinv(m$coefficients[[1]] + m$coefficients[[2]]*x), col=1, lwd=2)
+legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
+legend("bottomright", c("Y=Pi(X)", "1 - l(xi, yi)"), col=1:2, lty=1, cex=0.6)
 
+points(d$Bwt[2], s[2], col=2, pch=16)
+arrows(d$Bwt[2], 0, d$Bwt[2], py1x(d$Bwt,m)[2], col=adjustcolor(2, alpha.f=0.5), length=0.05, lwd=3)
 
+points(d$Bwt[110], s[110], col=2, pch=16)
+arrows(d$Bwt[110], 1, d$Bwt[110], py1x(d$Bwt,m)[110], col=adjustcolor(2, alpha.f=0.5), length=0.05, lwd=3)
+
+plot(d$Bwt, s, main="Sex~Bwt", xlab="Bwt", ylab="Sex")
+arrows(d$Bwt, s, d$Bwt, py1x(d$Bwt,m), col=adjustcolor(4, alpha.f=0.2), length=0.05, lwd=3)
+legend("bottomright","1 - P(Y=yi|X=xi)", col=4, lty=1, cex=0.6)
 ```
 
-4. Qu’en est-il pour cette sous population ?
-
-A partir des deux proemiers tableaux on en déduit ce troisième tableaux présentant la distribution de cancer de l’enfant selon le statut tabagique chez des mères n’ayant bu de d’alcool pendant la grossesse.
 
 
-```{r results="verbatim"}
-tabac = matrix(c(856, 213, 399, 86), 2)
-rownames(tabac) = c("non_fumeuse", "fumeuse")
-colnames(tabac) = c("non_malade", "malade")
-print(tabac)
+
+
+
+
+## Maximisation de la vraisemblance
+
+Le modèle s’écrit:  $logit(E(Y|X_1,...,X_p)) = \beta_0 + \beta_1X_1+...+\beta_pX_p$ avec $\beta = (\beta_0,\beta_1, ..., \beta_p)$ inconnus.
+
+On estime $\beta$ par **maximum de vraisemblance**.
+
+La vraisemblance conditionnelle est :
+
+$$\mathcal{L}_n(\beta) = \prod_{i=1}^{n} l(x_i, y_i) = \prod_{i=1}^{n} \pi(x_i)^{y_i}(1-\pi(x_i))^{1-y_i} = \prod_{i=1}^{n} \Big(\frac{\pi(x_i)}{1-\pi(x_i)}\Big)^{y_i}(1-\pi(x_i))$$
+
+
+En passant au logarithme, on a :
+
+$$log(\mathcal{L}_n(\beta)) = \sum_{i=1}^{n}\Big[ y_i * log \Big(\frac{\pi(x_i)}{1-\pi(x_i)}\Big) + log(1-\pi(x_i))\Big] $$
+
+Cette fonction contient des valeurs observées $y_i$ et des valeurs prédites $\pi(x_i)$ qui dépendent de $\beta$
+
+On maximise cette fonction en trouvant la valeur de $\beta$ *pour laquelle la dérivée (par rapport à $\beta$) est nulle* ($\mathcal{L}_n’(\beta) = 0$), definissant ainsi : 
+
+$$\widehat{\beta}_n = argmax( \mathcal{L}_n(\beta) )$$
+
+**Remarques**  :
+
+Il n’existe pas de **solution analytique** de $\mathcal{L}_n’(\beta) = 0$
+L’estimateur $\widehat{\beta}$ est obtenus **par approximation**, les résultats peuvent différer en fonction de l’algorithme utilisé. 
+Exemple d’algorithme simple : 
+
+1) initialisation des valeurs de $\beta$ de manière aléatoire et calcule la vraisemblance associée
+2) modification de la valeur de $\beta$, est-ce que cette nouvelle valeur améliorent la vraisemblance ? 
+3) si cette nouvelle valeur améliore la vraisemblance on la conserve sinon on la rejette
+4) itération jusqu’à convergeance (la vraisemblance devient stable, critère d’arrêt)
+
+
+```{r}
+layout(matrix(1:2, 1), respect=TRUE)
+plot(d$Bwt, s, main="Sex~Bwt, coef[1] step by 1", xlab="Bwt", ylab="Sex")
+# \mathbb{P}(Y=1|X) = logitinv(a + b.x)
+x = seq(min(d$Bwt), max(d$Bwt), length.out=30)
+m = glm(d$Sex~d$Bwt, family = binomial(logit))
+m$coefficients
+coefs = m$coefficients
+lines(x, logitinv(coefs[[1]] + coefs[[2]]*x), col=1, lwd=2)
+coefs[1] = coefs[1] - 5 
+for (i in 1:10) {
+  lines(x, logitinv(coefs[[1]] + coefs[[2]]*x), col=1, lwd=2, lty=2)
+  coefs[1] = coefs[1] + 1
+}
+
+
+plot(d$Bwt, s, main="Sex~Bwt, coef[2] step by 0.01", xlab="Bwt", ylab="Sex")
+# \mathbb{P}(Y=1|X) = logitinv(a + b.x)
+x = seq(min(d$Bwt), max(d$Bwt), length.out=30)
+m = glm(d$Sex~d$Bwt, family = binomial(logit))
+m$coefficients
+coefs = m$coefficients
+lines(x, logitinv(coefs[[1]] + coefs[[2]]*x), col=1, lwd=2)
+coefs[2] = coefs[2] - 1 
+for (i in 1:10) {
+  lines(x, logitinv(coefs[[1]] + coefs[[2]]*x), col=1, lwd=2, lty=2)
+  coefs[2] = coefs[2] + 0.2  
+}
 ```
 
-5. Qu’en est-il pour cette sous population ?
+
+## Propriétés de l’estimateur
+
+Asymptotiquement (i.e quand n tend vers l’infini), l’estimateur du maximum de vraisemblance:
+
+1) existe et est unique
+2) est sans biais  (i.e. il tend vers sa valeur réelle)
+3) est de distribution normale
+4) est efficace (i.e. de variance minimale parmi tous les estimateurs sans biais obtenus avec d’autres méthodes).
+
+- Ainsi: $\lim_{n\to\infty} \sqrt{n}(\widehat{\beta}-\beta) \rightarrow N(0,\Sigma^{-1})$ avec $\Sigma^{-1}$ la matrice de variance-covariance de $\beta$ 
+
+
+- On en déduit les **intervalles de confiance** pour $\beta_k$:
+
+$$ IC(\widehat{\beta}) = \Big[\widehat{\beta_k} -t_{1-\alpha/2,n-2} * \sqrt{\widehat{var}(\widehat{\beta_k})} ; \widehat{\beta_k}+t_{1-\alpha/2,n-2} * \sqrt{\widehat{var}(\widehat{\beta_k})} \Big]$$
+
+Avec  $t_{1-\alpha/2,n-2}$ le quantile de niveau $1-\alpha/2$ de la loi de student à (n-2) degrés de liberté 
+
+En pratique approximé dès que $n>30$ par $u_{1-\alpha/2}$ le quantile de niveau $1-\alpha/2$ de la loi normale
+
+
+
+
+
+
+
 
 

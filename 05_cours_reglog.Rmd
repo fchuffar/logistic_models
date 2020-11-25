@@ -1,0 +1,132 @@
+# Sélection de variables
+
+Itérativement, on construit un nouveau modèle en ajoutant ou enlevant des variables à un modèle existant. 
+On évalue le nouveau modèle selon un critère. On s’arrête quand la qualité du modèle n’augmemnte plus.
+
+## Les Critères
+
+  - Pseudo-$R^2$ de McFadden
+  - Critètre d’information d’Akaike (AIC)
+
+$$AIC = -2log(\mathcal{L}_n(\widehat{\beta})) + 2p$$
+
+  - Critètre d’information bayesien (BIC)
+
+$$BIC = -2log(\mathcal{L}_n(\widehat{\beta})) + p \log(n)$$
+
+
+**Remarques** : 
+
+- Ces critères s’appliquent aux modèles estimés par une méthode du **maximum de vraisemblance**.
+- Le pseudo-$R^2$ de McFadden augmente de façon monotone avec l’introduction de nouvelles variables.
+- Pour l’AIC et le BIC, le meilleur modèle est celui qui minimise le critère.
+- Le BIC est plus parcimonieux que l’AIC puisqu’il pénalise plus le nombre de variables présentent de le modèle.
+
+
+
+## Les méthodes
+
+Méthodes les plus classiques :
+
+- Forward (ou pas à pas ascendante)
+- Backward (ou pas à pas descendante)
+- Stepwise
+
+Ces méthodes s’appuient sur les *données recueillies*. Elles sont *itératives*. Elle dépendent de *paramètres*.
+
+Bien que l’efficacité de ces méthodes ne puisse être démentie par la pratique, il ne serait pas raisonnable de se fier uniquement aux résultats statistiques fournis par un algorithme. 
+
+En effet, pour décider d’ajouter ou de supprimer une variable dans un modèle, l’analyste ne se limite pas à la *technique*, il fait également appel à son *intuition*, sa *déduction* et son esprit de *synthèse*. Pour cela il confronte les approches (statistiques, analyse de données, classification) et il travaille en étroite collaboration avec les experts métiers (le métier dont sont issues les données).
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Forward**
+
+1) On part du modèle le plus **simple** :
+
+- Modèle vide (avec uniquement la constante)
+- Ou modèle avec les variables d’ajustement
+
+2) On **ajoute une à une** les variables :
+
+- En se basant sur le test de rapport de vraisemblance
+- En ajoutant à chaque pas, parmi les variables restantes, celle qui est la plus significative (selon un critère donné)
+
+3) On s’arrête quand il n’y a plus de variables à ajouter, *e.g*, l’AIC ne baisse plus.
+
+
+```{r echo=TRUE, results="verbatim"}
+d = MASS::cats
+m_lo = glm(Sex ~ 1, d, family=binomial(logit))
+m_up = glm(Sex ~ ., d, family=binomial(logit))
+m = step(m_lo, dir="forward", scope=list(upper=m_up,lower=m_lo))
+```
+
+**Backward**
+
+1) On part du modèle **le plus complexe**, i.e. avec toutes les variables incluses
+
+2) On **retire une à une** les variables :
+
+- En se basant sur le test de rapport de vraisemblance
+- En retirant à chaque pas, parmi les variables incluses, celle qui est la moins significative (selon un critère donné)
+
+3) On s’arrête quand il n’y a plus de variables à retirer, *e.g*, l’AIC ne baisse plus.
+
+```{r echo=TRUE, results="verbatim"}
+m_lo = glm(Sex ~ 1, d, family=binomial(logit))
+m_up = glm(Sex ~ ., d, family=binomial(logit))
+m = step(m_up, dir="backward", scope=list(upper=m_up,lower=m_lo))
+```
+
+**Stepwise**
+
+1) On part d’un **modèle donné**.
+
+2) A chaque pas, on peut **soit retirer une variable, soit ajouter une variable**:
+
+- En se basant sur le test de rapport de vraisemblance
+- soit (selon un critère donné) : en retirant, parmi les variables incluses, celle qui est la moins significative ou en ajoutant, parmi les variables restantes, celle qui est la plus significative.
+
+3) On s’arrète quand il n’y a plus de variables à retirer ou à ajouter, *e.g*, l’AIC ne baisse plus.
+
+
+```{r echo=TRUE, results="verbatim"}
+m_lo = glm(Sex ~ 1, d, family=binomial(logit))
+m_up = glm(Sex ~ ., d, family=binomial(logit))
+m = step( glm(Sex ~ Hwt, d, family=binomial(logit)), dir="both", scope=list(upper=m_up,lower=m_lo))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

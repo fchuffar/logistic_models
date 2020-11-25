@@ -1,0 +1,219 @@
+# Travaux pratiques
+
+## Une seule covariable qualitative
+
+On s’intéresse au rôle de différents facteurs dans la survenue de cancer pédiatriques (chez l’enfant).
+
+Ce premier tableau présente la distribution de cancer de l’enfant selon le statut tabagique des mères : 
+
+
+```{r}
+# tabac = matrix(c(1128, 289, 487, 133), 2)
+# tabac = matrix(c( 272,  76,  88,  47), 2)
+# tabac = matrix(c( 856, 213, 399,  86), 2)
+dd = data.frame(do.call( rbind, list(
+  matrix(rep(c("healthy", "nosmok", "drinker"), 272), byrow=TRUE, ncol=3),
+  matrix(rep(c("healthy", "smoker", "drinker"),  76), byrow=TRUE, ncol=3),
+  matrix(rep(c("sick"   , "nosmok", "drinker"),  88), byrow=TRUE, ncol=3),
+  matrix(rep(c("sick"   , "smoker", "drinker"),  47), byrow=TRUE, ncol=3),
+  matrix(rep(c("healthy", "nosmok", "nodrink"), 856), byrow=TRUE, ncol=3),
+  matrix(rep(c("healthy", "smoker", "nodrink"), 213), byrow=TRUE, ncol=3),
+  matrix(rep(c("sick"   , "nosmok", "nodrink"), 399), byrow=TRUE, ncol=3),
+  matrix(rep(c("sick"   , "smoker", "nodrink"),  86), byrow=TRUE, ncol=3)
+)))
+colnames(dd) = c("cancer", "tabac", "alcool")
+rownames(dd) = NULL
+# head(dd)
+#
+table(dd$tabac, dd$cancer)
+```
+
+
+
+
+```{r results="verbatim"}
+# tabac = matrix(c(1128, 289, 487, 133), 2)
+# # tabac = matrix(c(856, 213, 399, 86), 2)
+# rownames(tabac) = c("nosmok", "smoker")
+# colnames(tabac) = c("healthy", "sick")
+# print(tabac)
+table(dd$tabac, dd$cancer)
+```
+
+1. *Identifiez la variable expliquée Y et la variable explicative $X_1$, ainsi que les valeurs qu’elles peuvent prendre.*
+
+La variable expliquée $Y$ est *la survenu d’un cancer chez l’enfant*, elle prend ses valeurs dans *healthy*, *sick*.
+
+La variable explicative $X_1$ *le statut tabagique*, elle prend ses valeurs dans *nosmok* et *smoker*.
+
+2. *Exprimez l’OR associé à $X_1$ en fonction des probabilités conditionnelles de Y sachant $X_1$, puis en fonction des valeurs du tableau.*
+
+
+
+\begin{eqnarray}
+\mathbb{P}(Y=\text{sick}|X_1) &=& \pi (X_1) \\
+
+\mathbb{P}(Y=\text{sick}|X_1=\text{smoker})
+  &=& \pi_\text{smoker} \\
+  &=& \frac{133}{133+289}\\
+
+\mathbb{P}(Y=\text{sick}|X_1=\text{nosmok})
+  &=& \pi_\text{nosmok} \\
+  &=& \frac{487}{1128+487} \\
+\end{eqnarray}
+
+
+3. *Caluclez l’OR associé à $X_1$. Interprétez.*
+
+\begin{eqnarray}
+Odds(\text{smoker})
+&=& \frac{\pi_\text{smoker}}{1-\pi_\text{smoker}} \\
+&=& \frac{\frac{133}{133+289}}{1-\frac{133}{133+289}} \\
+&=& \frac{\frac{133}{133+289}}{\frac{289}{133+289}} \\
+&=& \frac{133}{289}  \simeq \frac{1}{2}\\
+\end{eqnarray}
+
+
+\begin{eqnarray}
+Odds(\text{nosmok})
+  &=& \frac{\pi_\text{nosmok}}{1-\pi_\text{nosmok}} \\
+  &=& \frac{487}{1128} \simeq \frac{1}{2}\\
+\end{eqnarray}
+
+
+\begin{eqnarray}
+OR_{\text{smoker}/\text{nosmok}}
+  &=& \frac{Odds(\text{smoker})}{Odds(\text{nosmok})}\\
+  &=& \frac{133}{289} \frac{1128}{487} =  1.07 \simeq 1\\
+\end{eqnarray}
+
+
+
+
+On observe pas de risque particulier de cancer pédiatrique chez les enfants de femmes fumeuses.
+
+4. *Donnez l’expression analytique du modèle envisagé.*
+
+
+\begin{eqnarray}
+cancer &\sim& tabac \\
+logit(\mathbb{P}(Y=sick|X_1)) &=& \beta_0 + \beta_1 X_1 \\
+
+\end{eqnarray}
+
+5. *Sachant que $odd(X=x) = e^{\beta x}$ et que $var(\beta) = \frac{1}{a} + \frac{1}{b} + \frac{1}{c} + \frac{1}{d}$, en déduire la valeur de $\beta$ et de la variance de $\beta$.*
+
+
+```{r results="verbatim", echo=TRUE} 
+a=1128; b=487; c=289; d=133
+beta = log((a*d)/(b*c))   
+var = 1/a+1/b+1/c+1/d
+sd = sqrt(var)
+z = beta/sd               
+pval = 2*(1-pnorm(z))     
+c(beta=beta, sd=sd, z=z, pval=pval)
+# Note : z^2 ~ chi2 
+1-pchisq(z^2,1)
+# Exercice : vérifier sur des données simulées avec n<<30 si les deux stat sont équivalenets.
+options(contrasts=c("contr.treatment", "contr.poly"))
+m = glm(cancer~tabac, dd, family = binomial(logit))
+summary(m)
+```
+
+**Sondage** : Quel est le nombre de lignes de `dd` ? 4 ? 42 ? 1128 ? 2037 ?
+
+```{r results="verbatim"} 
+table(dd$tabac, dd$cancer)
+```
+
+
+```
+m$coefficients
+exp(m$coefficients[[1]])
+487/1128
+exp(m$coefficients[[1]] + m$coefficients[[2]])
+133/289
+```
+
+```{r}
+layout(matrix(1:2, 1), respect=TRUE)
+plot(dd$tabac, dd$cancer, main="cancer~tabac", xlab="tabac", ylab="cancer")
+plot(jitter(as.numeric(dd$tabac))-1, jitter(as.numeric(dd$cancer))-1, main="cancer~tabac", xlab="tabac", ylab="cancer")
+# \mathbb{P}(Y=1|X) = logitinv(a + b.x)
+m = glm(dd$cancer~dd$tabac, family = binomial(logit))
+m$coefficients
+logitinv = function(x) 1/(1 + exp(-x))
+x = seq(0, 1, length.out=30)
+lines(x, logitinv(m$coefficients[[1]] + m$coefficients[[2]]*x), col=1, lwd=2)
+legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
+```
+
+
+```{r eval=FALSE}
+options(contrasts=c("contr.sum", "contr.poly"))
+m = glm(cancer~tabac, dd, family = binomial(logit))
+exp(m$coefficients[[1]] + m$coefficients[[2]])
+487/1128
+exp(m$coefficients[[1]] - m$coefficientsp[2]])
+133/289
+summary(m)
+
+
+head(dd)
+dim(dd)
+# qchisq(r[4],1)
+
+# 6. *Calculez l’intervalle de confiance de \beta puis de l’OR. Conclure sur sa significativité.*
+#
+# 7. *Après avoir posées les hypothèses H0 et H1 (en fonction de β et de OR), calculez la statistique du test de Wald pour la variable $X_1$. Conclure sur sa significativité.*
+#
+```
+
+
+
+
+Ce second tableau présente se focalise sur la distribution de cancer de l’enfant selon le statut tabagique chez des mères ayant bu de l’alcool pendant la grossesse : 
+
+
+```{r results="verbatim"}
+dd2 = dd[dd$alcool%in%"drinker",]
+table(dd2$tabac, dd2$cancer)
+```
+
+6. *Qu’en est-il pour cette sous population ?*
+
+
+De la même manière on obtient : 
+
+\begin{eqnarray}
+OR_{\text{smoker}/\text{nosmok}}
+  &=& \frac{Odds(\text{smoker})}{Odds(\text{nosmok})}\\
+  &=& \frac{47}{76} \frac{272}{88} = 1.91 \simeq 2\\
+\end{eqnarray}
+
+
+Chez les enfants de mères fumeuses ayant bu de l’alcool pendant la grossesse, on observe un risque plus élevé de cancer pédiatrique.
+
+
+```{r results="verbatim", echo=TRUE}
+m = glm(cancer~tabac, dd2, family = binomial(logit))
+m$coefficients
+summary(m)
+```
+
+```{r}
+layout(matrix(1:2, 1), respect=TRUE)
+plot(dd2$tabac, dd2$cancer, main="cancer~tabac", xlab="tabac", ylab="cancer")
+plot(jitter(as.numeric(dd2$tabac))-1, jitter(as.numeric(dd2$cancer))-1, main="cancer~tabac", xlab="tabac", ylab="cancer")
+# \mathbb{P}(Y=1|X) = logitinv(a + b.x)
+m = glm(dd2$cancer~dd2$tabac, family = binomial(logit))
+m$coefficients
+logitinv = function(x) 1/(1 + exp(-x))
+x = seq(0, 1, length.out=30)
+lines(x, logitinv(m$coefficients[[1]] + m$coefficients[[2]]*x), col=1, lwd=2)
+legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
+```
+
+
+
+

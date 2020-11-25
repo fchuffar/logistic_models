@@ -23,41 +23,37 @@ Sous certaines hypothèses (*exercice : lesquelles ?*), l’estimateur des moind
 
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 d = MASS::cats
-m = lm(Hwt~Bwt, d)
+m = lm(Bwt~Hwt, d)
 layout(matrix(1:2, 1), respect=TRUE)
 plot(
-  m$model$Bwt, m$model$Hwt,
-  xlab="Body weight (Bwt)", ylab="Heart weight (Hwt)",
-  main="Regression lineaire (Hwt~Bwt)"
+  m$model$Hwt, m$model$Bwt,
+  ylab="Body weight (Bwt)", xlab="Heart weight (Hwt)",
+  main="Regression lineaire (Bwt~Hwt)"
 )
 abline(m, col=2)
-arrows(d$Bwt, d$Hwt, d$Bwt, d$Hwt-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
+arrows(d$Hwt, d$Bwt, d$Hwt, d$Bwt-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
 
-i = 140
-points(m$model[i,]$Bwt, m$model[i,]$Hwt,  pch=16)
-points(m$model[i,]$Bwt, d[i,]$Hwt-m$residuals[i],  pch=16)
-arrows(d[i,]$Bwt, d[i,]$Hwt, d[i,]$Bwt, d[i,]$Hwt-m$residuals[i], col=4, lwd=2, length=0.1)
-text(m$model[i,]$Bwt, m$model[i,]$Hwt, "yi", pos=1, cex=1.3)
-text(m$model[i,]$Bwt, d[i,]$Hwt-m$residuals[i]/2,  "ei", pos=4, cex=1.3)
-text(m$model[i,]$Bwt, d[i,]$Hwt-m$residuals[i],  "^yi", pos=3, cex=1.3)
-
-
-
-legend("topleft",c("regression line", "residuals"), col=c(2,4), lty=1, cex=.8)
+i = which(d$Hwt==17.2)
+points(m$model[i,]$Hwt, m$model[i,]$Bwt,  pch=16)
+points(m$model[i,]$Hwt, d[i,]$Bwt-m$residuals[i],  pch=16)
+arrows(d[i,]$Hwt, d[i,]$Bwt, d[i,]$Hwt, d[i,]$Bwt-m$residuals[i], col=4, lwd=2, length=0.1)
+text(m$model[i,]$Hwt, m$model[i,]$Bwt, "yi", pos=1, cex=1.3)
+text(m$model[i,]$Hwt, d[i,]$Bwt-m$residuals[i]/2,  "ei", pos=4, cex=1.3)
+text(m$model[i,]$Hwt, d[i,]$Bwt-m$residuals[i],  "^yi", pos=3, cex=1.3)
+legend("bottomright",c("regression line", "residuals"), col=c(2,4), lty=1, cex=.8)
 
 
-# plot(d$Sex, d$Hwt, main="ANOVA (Hwt~Sex)", xlab="Sex", ylab="Hwt")
-boxplot(Hwt~Sex, d, main="ANOVA (Hwt~Sex)", xlab="Sex", ylab="Hwt", outline=FALSE, ylim=range(d$Hwt))
-m = lm(Hwt~Sex, d)
+boxplot(Bwt~Sex, d, main="ANOVA (Bwt~Sex)", xlab="Sex", ylab="Bwt", outline=FALSE, ylim=range(d$Bwt))
+m = lm(Bwt~Sex, d)
 m$coefficients
 abline(h=m$coefficients[[1]] + m$coefficients[[2]], col=2)
 abline(h=m$coefficients[[1]], col=2, lty=2)
 
 x = jitter(as.numeric(d$Sex), 1.5)
-points(x, d$Hwt)
-arrows(x, d$Hwt, x, d$Hwt-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
+points(x, d$Bwt)
+arrows(x, d$Bwt, x, d$Bwt-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
 legend("topleft",c("b_0", "b_0+b_1", "residuals"), col=c(2,2,4), lty=c(2,1,1), cex=.8)
 
 # t.test
@@ -68,11 +64,11 @@ legend("topleft",c("b_0", "b_0+b_1", "residuals"), col=c(2,2,4), lty=c(2,1,1), c
 # alpha = 5%
 # 3 test hypothesis
 # residuals~N?
-shapiro.test(d[d$Sex=="F",]$Hwt)
-shapiro.test(d[d$Sex=="M",]$Hwt)
+shapiro.test(d[d$Sex=="F",]$Bwt)
+shapiro.test(d[d$Sex=="M",]$Bwt)
 # -> OK
 # 4 t.test
-t.test(d[d$Sex=="F",]$Hwt, d[d$Sex=="M",]$Hwt)
+t.test(d[d$Sex=="F",]$Bwt, d[d$Sex=="M",]$Bwt)
 anova(m)
 # 5 conclusion
 ```

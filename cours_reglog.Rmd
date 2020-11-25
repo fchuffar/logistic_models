@@ -21,7 +21,7 @@ options(contrasts=c("contr.sum", "contr.poly"))
 
 # Avant Propos
 
-## Evaluations
+**Evaluations**
 
  - individuelle via un questionnaire à la fin de chaque séance 
 
@@ -30,63 +30,83 @@ options(contrasts=c("contr.sum", "contr.poly"))
    - Evaluation 3 
    - Evaluation 4 
  
- - en équipe lors d‘un *data challenge* à l’issue des 4 séances de regression logistique et du cours surles modèles de survie.
+ - en équipe lors d‘un *data challenge* à l’issue des 4 séances de regression logistique et du cours sur les modèles de survie.
 
-## Pré-requis
+**Pré-requis**
  
  - R https://cran.r-project.org 
  - RStudio https://www.rstudio.com
 
-## Cours 
+**Cours**
 
 - https://github.com/fchuffar/logistic_models
 
 
-## Organisation prévisionnelle
+**Organisation prévisionnelle**
 
-Séance 1 - 3h  Régression logistique 1/2
+Séance 1 - 3h  Le modèle logistique
 
-Séance 2 - 3h  Régression logistique 2/2
+Séance 2 - 3h  La régression logistique [sexpred](https://competitions.codalab.org/competitions/21853?secret_key=b50bf124-3513-4190-9397-ddd6c2561aea)
 
 Séance 3 - 3h  Apprentissage automatique / validation croisée (Data challenge *histpred2.0*) 
 
 Séance 4 - 3h  Apprentissage automatique / validation croisée (Correction)
 
 
+
+```{r child = '00_cours_reglog.Rmd', eval=TRUE, label="linear models"}
+```
+
+```{r child = '01_cours_reglog.Rmd', eval=TRUE, label="logistic model"}
+```
+
+```{r child = '02_cours_reglog.Rmd', eval=TRUE, label="vraisemblance"}
+```
+
+```{r child = '03_cours_reglog.Rmd', eval=TRUE, label="tests"}
+```
+
+```{r child = '04_cours_reglog.Rmd', eval=TRUE, label="adequation"}
+```
+
+```{r child = '05_cours_reglog.Rmd', eval=TRUE, label="variable selection"}
+```
+
+```{r child = '06_cours_reglog.Rmd', eval=TRUE, label="exemple"}
+```
+
+
+
+
+
+
+
+
 ---
 
-
-
-```{r child = '00_cours_reglog.Rmd', eval=TRUE}
-```
-
-
-```{r child = '01_cours_reglog.Rmd', eval=TRUE}
-```
-
-
-```{r child = '02_cours_reglog.Rmd', eval=TRUE}
-```
-
-
-
-
-
-
-
-
----
-
-# Notes
+# Notes et remerciements
 
 Ce cours s’inspire des références suivantes :
 
 - Regression Logistique (Lydiane Agier)
-- [StatQuest: Logistic Regression] (https://youtube.com/playlist?list=PLblh5JKOoLUKxzEP5HA2d-Li7IJkHfXSe)
+- [StatQuest: Logistic Regression](https://youtube.com/playlist?list=PLblh5JKOoLUKxzEP5HA2d-Li7IJkHfXSe)
+- Valerie Monbet *La régression logistique.pdf* 
+- http://wikistat.fr/pdf/st-m-modlin-reglog.pdf
+
 
 ---
 
-# Informations de session
+## Mise en pratique
+
+Quelques exercices à réaliser sous R disponibles:
+
+- [TP1](TP1_reglog_M2.pdf)
+- [TP2](TP2_reglog_M2.pdf)
+- [TP3](TP3_reglog_M2.pdf)
+
+
+
+## Informations de session
 
 ```{r, results="verbatim"}
 sessionInfo()
