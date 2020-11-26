@@ -223,6 +223,7 @@ legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
 - Hypothèse $H_0$ et $H1$
 - Statistique de test 
 - Valeur de la statistique
+- P-valeur associé
 - Conclusion
   
 
@@ -233,6 +234,13 @@ legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
 ## unemployment
 
 Etudier le modèle $durbin \sim age$.
+
+- Ecriture analytique du modèle
+- Hypothèse $H_0$ et $H1$
+- Statistique de test 
+- Valeur de la statistique
+- P-valeur associé
+- Conclusion
 
 ```{r results="verbatim", echo=TRUE}
 library(catdata)
@@ -246,6 +254,13 @@ dim(d)
 ## leukoplakia
 
 Expliquer la variable `Leukoplakia`.
+
+- Ecriture analytique du modèle
+- Hypothèse $H_0$ et $H1$
+- Statistique de test 
+- Valeur de la statistique
+- P-valeur associé
+- Conclusion
 
 ```{r results="verbatim", echo=TRUE}
 library(catdata)
@@ -264,6 +279,12 @@ dim(d)
 
 Expliquer la variable `vaso`.
 
+- Ecriture analytique du modèle
+- Hypothèse $H_0$ et $H1$
+- Statistique de test 
+- Valeur de la statistique
+- P-valeur associé
+- Conclusion
 
 ```{r results="verbatim", echo=TRUE}
 library(catdata)
@@ -281,6 +302,13 @@ dim(d)
 ## Histoire de Vie (hdv2003)
 
 Expliquer la variable `sport`.
+
+- Ecriture analytique du modèle
+- Hypothèse $H_0$ et $H1$
+- Statistique de test 
+- Valeur de la statistique
+- P-valeur associé
+- Conclusion
 
 ```{r results="verbatim", echo=TRUE}
 library(questionr)
@@ -306,6 +334,13 @@ dim(d)
 
 Expliquer la variable `happy`.
 
+- Ecriture analytique du modèle
+- Hypothèse $H_0$ et $H1$
+- Statistique de test 
+- Valeur de la statistique
+- P-valeur associé
+- Conclusion
+
 ```{r results="verbatim", echo=TRUE}
 library(questionr)
 data(happy)
@@ -318,6 +353,13 @@ dim(d)
 ## dust
 
 Expliquer la variable `bronch`.
+
+- Ecriture analytique du modèle
+- Hypothèse $H_0$ et $H1$
+- Statistique de test 
+- Valeur de la statistique
+- P-valeur associé
+- Conclusion
 
 ```{r results="verbatim", echo=TRUE}
 library(catdata)
@@ -334,6 +376,13 @@ dim(d)
 
 Expliquer la variable `Episiotomy`.
 
+- Ecriture analytique du modèle
+- Hypothèse $H_0$ et $H1$
+- Statistique de test 
+- Valeur de la statistique
+- P-valeur associé
+- Conclusion
+
 ```{r results="verbatim", echo=TRUE}
 library(catdata)
 data(birth)
@@ -346,6 +395,13 @@ dim(d)
 ## foodstamp
 
 Expliquer la variable `y`.
+
+- Ecriture analytique du modèle
+- Hypothèse $H_0$ et $H1$
+- Statistique de test 
+- Valeur de la statistique
+- P-valeur associé
+- Conclusion
 
 ```{r results="verbatim", echo=TRUE}
 library(catdata)
