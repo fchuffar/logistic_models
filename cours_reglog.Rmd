@@ -26,7 +26,7 @@ options(contrasts=c("contr.sum", "contr.poly"))
  - individuelle via un questionnaire à la fin de chaque séance 
 
    - Evaluation 1 https://forms.gle/s9Go7tm9EW7f8vE19
-   - Evaluation 2 
+   - Evaluation 2 https://chagrade.lri.fr/
    - Evaluation 3 
    - Evaluation 4 
  

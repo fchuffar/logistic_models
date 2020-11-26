@@ -16,7 +16,7 @@ Il existe 2 approches :
 
 Soit $\mathcal{M}_1$ un modèle comprenant $n$ variables explicatives.
 
-$$Y \sim \beta_0 + \beta_1 X_1 + ... + \beta_k X_k + ... + \beta_n X_n$$
+$$logit(\mathbb{P}(Y=1|X) = \beta_0 + \beta_1 X_1 + ... + \beta_k X_k + ... + \beta_n X_n$$
 
 L’objet du test est d’évaluer la  **significativité du paramêtre $\beta_k$**
 

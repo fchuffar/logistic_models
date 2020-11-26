@@ -223,7 +223,7 @@ legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
 - Hypothèse $H_0$ et $H1$
 - Statistique de test 
 - Valeur de la statistique
-- P-valeur associé
+- P-valeur associée
 - Conclusion
   
 
@@ -239,7 +239,7 @@ Etudier le modèle $durbin \sim age$.
 - Hypothèse $H_0$ et $H1$
 - Statistique de test 
 - Valeur de la statistique
-- P-valeur associé
+- P-valeur associée
 - Conclusion
 
 ```{r results="verbatim", echo=TRUE}
@@ -259,7 +259,7 @@ Expliquer la variable `Leukoplakia`.
 - Hypothèse $H_0$ et $H1$
 - Statistique de test 
 - Valeur de la statistique
-- P-valeur associé
+- P-valeur associée
 - Conclusion
 
 ```{r results="verbatim", echo=TRUE}
@@ -283,7 +283,7 @@ Expliquer la variable `vaso`.
 - Hypothèse $H_0$ et $H1$
 - Statistique de test 
 - Valeur de la statistique
-- P-valeur associé
+- P-valeur associée
 - Conclusion
 
 ```{r results="verbatim", echo=TRUE}
@@ -307,7 +307,7 @@ Expliquer la variable `sport`.
 - Hypothèse $H_0$ et $H1$
 - Statistique de test 
 - Valeur de la statistique
-- P-valeur associé
+- P-valeur associée
 - Conclusion
 
 ```{r results="verbatim", echo=TRUE}
@@ -338,7 +338,7 @@ Expliquer la variable `happy`.
 - Hypothèse $H_0$ et $H1$
 - Statistique de test 
 - Valeur de la statistique
-- P-valeur associé
+- P-valeur associée
 - Conclusion
 
 ```{r results="verbatim", echo=TRUE}
@@ -358,7 +358,7 @@ Expliquer la variable `bronch`.
 - Hypothèse $H_0$ et $H1$
 - Statistique de test 
 - Valeur de la statistique
-- P-valeur associé
+- P-valeur associée
 - Conclusion
 
 ```{r results="verbatim", echo=TRUE}
@@ -380,7 +380,7 @@ Expliquer la variable `Episiotomy`.
 - Hypothèse $H_0$ et $H1$
 - Statistique de test 
 - Valeur de la statistique
-- P-valeur associé
+- P-valeur associée
 - Conclusion
 
 ```{r results="verbatim", echo=TRUE}
@@ -400,7 +400,7 @@ Expliquer la variable `y`.
 - Hypothèse $H_0$ et $H1$
 - Statistique de test 
 - Valeur de la statistique
-- P-valeur associé
+- P-valeur associée
 - Conclusion
 
 ```{r results="verbatim", echo=TRUE}
