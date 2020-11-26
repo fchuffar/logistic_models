@@ -1,6 +1,6 @@
 # Travaux pratiques
 
-## Une seule covariable qualitative
+## Cancer pédiatriques
 
 On s’intéresse au rôle de différents facteurs dans la survenue de cancer pédiatriques (chez l’enfant).
 
@@ -217,3 +217,140 @@ legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
 
 
 
+7. *Etudier le modèle $cancer \sim tabac*alcool$*
+
+- Ecriture analytique du modèle
+- Hypothèse $H_0$ et $H1$
+- Statistique de test 
+- Valeur de la statistique
+- Conclusion
+  
+
+
+
+
+
+## unemployment
+
+Etudier le modèle $durbin \sim age$.
+
+```{r results="verbatim", echo=TRUE}
+library(catdata)
+data(unemployment)
+d = unemployment
+head(d)
+dim(d) 
+```
+
+
+## leukoplakia
+
+Expliquer la variable `Leukoplakia`.
+
+```{r results="verbatim", echo=TRUE}
+library(catdata)
+data(leukoplakia)
+d = data.frame(do.call(rbind, apply(leukoplakia, 1, function(l) {
+  matrix(rep(l[1:3], l[4]), byrow=TRUE, ncol=3)
+}))) 
+colnames(d) = colnames(leukoplakia)[1:3]
+head(d)
+dim(d) 
+```
+
+
+
+## vaso
+
+Expliquer la variable `vaso`.
+
+
+```{r results="verbatim", echo=TRUE}
+library(catdata)
+# vignette("binary-vaso")
+data(vaso)
+d = vaso
+head(d)
+dim(d) 
+```
+
+
+
+
+
+## Histoire de Vie (hdv2003)
+
+Expliquer la variable `sport`.
+
+```{r results="verbatim", echo=TRUE}
+library(questionr)
+data(hdv2003)
+d = hdv2003
+head(d)
+dim(d) 
+```
+
+
+## titanic
+
+Etudier le modèle `Survived~Pclass+Sex+Age+Fare`.
+
+```{r results="verbatim", echo=TRUE}
+d = titanic::titanic_train
+head(d)
+dim(d) 
+```
+
+
+## Happy or not?
+
+Expliquer la variable `happy`.
+
+```{r results="verbatim", echo=TRUE}
+library(questionr)
+data(happy)
+d = happy
+head(d)
+dim(d) 
+```
+
+
+## dust
+
+Expliquer la variable `bronch`.
+
+```{r results="verbatim", echo=TRUE}
+library(catdata)
+data(dust)
+d = dust
+head(d)
+dim(d) 
+```
+
+
+
+
+## birth
+
+Expliquer la variable `Episiotomy`.
+
+```{r results="verbatim", echo=TRUE}
+library(catdata)
+data(birth)
+d = birth
+head(d)
+dim(d) 
+```
+
+
+## foodstamp
+
+Expliquer la variable `y`.
+
+```{r results="verbatim", echo=TRUE}
+library(catdata)
+data(foodstamp)
+d = foodstamp
+head(d)
+dim(d) 
+```

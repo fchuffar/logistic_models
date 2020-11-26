@@ -36,7 +36,7 @@ Sous H_0 :
 $$\mathcal{T} = \frac{\widehat\beta^2}{\widehat\Sigma} \sim \mathcal{X}^2_p$$
 
 
-avec $p$ le nombre de niveaux du facteur k moins 1 testés ; 
+avec $p$ le nombre de niveaux du facteur k testé moins 1 ; 
 
 mais aussi :
 
@@ -117,7 +117,7 @@ Soit $\mathcal{L}_1$ la valeur de vraisemblance de $\mathcal{M}_1$ et $\mathcal{
 $$\left  \lbrace
 \begin{array}{l}
 H_0 : \beta_{n-p+1} = \beta_{...} = \beta_{n} = 0 \\
-H_1 : \exists k \in \{n-p+1, ..., n \} \text{tel que} \beta_{k} \neq 0 
+H_1 : \exists k \in \{n-p+1, ..., n \} \text{ tel que } \beta_{k} \neq 0 
 \end{array}
 \right.$$
 
@@ -157,43 +157,4 @@ anova(m2, m1, test="Chisq")
 
 
 
-
-install.packages("pander")
-install.packages("funModeling")
-head(heart_disease)
-install.packages("questionr")
-
-
-data(hdv2003)
-
-
-
-
-data(fecondite)
-data(fertility)
-data(happy)
-data(hdv2003)
-data(rp99)
-data(rp2012)
-
-
-dim(fecondite)
-dim(fertility)
-dim(happy)
-dim(hdv2003)
-dim(rp99)
-dim(rp2012)
-
-
-
-
-
-
-
-
-
-
-
-
-https://cran.r-project.org/web/packages/catdata/catdata.pdf
 
