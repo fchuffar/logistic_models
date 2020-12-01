@@ -2,16 +2,18 @@
 
 Comment mesurer si le modèle construit **prédit de façon efficace** les données observées ?
 
-Mesurer l’**adéquation** du modèle **aux données** c’est étudier essentiellement :
+Comment mesurer l’**adéquation** du modèle **aux données** ?
 
-- L’*écart global* entre les valeurs prédites et les valeurs observées (i.e. mesures globales)
-  - Calibration du modèle (concordance entre les valeurs prédites et observées) : **Test de Hosmer-Lemeshow**
-  - Pouvoir discriminant du modèle :  courbe **ROC** et critère **AUC** (Area Under Curve)
+Comment quantifier l’*écart global* entre les valeurs prédites et les valeurs observées (*i.e.*, mesures globales) ?
 
-- La *contribution* de chaque observation au modèle (détection des outliers)
-  - Résidus de Pearson 
-  - Résidus de déviance
+Comment évaluer la *contribution* de chaque observation au modèle (*i.e.*, détection des outliers) ?
 
+
+3 outils : 
+
+- Pseudo-$R^2$ de McFadden
+- Test de Hosmer-Lemeshow (calibration du modèle)
+- Courbe **ROC** et critère **AUC** (pouvoir discriminant du modèle)
 
 
 ## Pseudo-$R^2$ de McFadden
@@ -66,11 +68,21 @@ Si la p-valeur du test de Hosmer-Lemeslow est > 0.05, on conserve $H_0$, les val
 **Exemple**
 
 ```{r, eval=TRUE, echo=TRUE, results="verbatim"}
-m = glm(Sex~Bwt, d, family = binomial(logit))
+m = glm(Sex~Bwt+Hwt, d, family = binomial(logit))
 test = ResourceSelection::hoslem.test (as.numeric(d$Sex)-1, m$fitted.values)
-test[[6]]
-test[[7]]
+test$observed  
+test$expected 
 test
+```
+```{r}
+layout(1, respect=TRUE)
+plot (test$expected[,1], type="b", col="grey", ylim=c(min(test[[7]]), max(test[[7]])), xlab="K quantiles", ylab="effectifs", main="hoslem.test")
+lines(test$expected[,2], type="b", col="grey")
+arrows(1:10, test$observed[,1], 1:10, test$expected[,1], col=adjustcolor(4, alpha.f=0.5), length=0.05, lwd=3)
+arrows(1:10, test$observed[,2], 1:10, test$expected[,2], col=adjustcolor(4, alpha.f=0.5), length=0.05, lwd=3)
+points(test$observed[,1], col="red")
+points(test$observed[,2], col="red")
+legend("topleft", pch=1, col=c("grey", "red"), c("expected", "observed"))
 ```
 
 

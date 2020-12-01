@@ -25,9 +25,9 @@ options(contrasts=c("contr.sum", "contr.poly"))
 
  - individuelle via un questionnaire à la fin de chaque séance 
 
-   - Evaluation 1 https://forms.gle/s9Go7tm9EW7f8vE19
-   - Evaluation 2 https://chagrade.lri.fr/
-   - Evaluation 3 
+   - Evaluation 1 [Questionnaire *référence biblio*](https://forms.gle/s9Go7tm9EW7f8vE19)
+   - Evaluation 2 [Rapport guidé *Explanatory models*](https://chagrade.lri.fr/)
+   - Evaluation 3 [Data challenge *histpred2.0*](https://competitions.codalab.org/competitions/25357?secret_key=3a54cc71-6bbf-4e30-bf98-e9ec502853bf)
    - Evaluation 4 
  
  - en équipe lors d‘un *data challenge* à l’issue des 4 séances de regression logistique et du cours sur les modèles de survie.
@@ -46,11 +46,11 @@ options(contrasts=c("contr.sum", "contr.poly"))
 
 Séance 1 - 3h  Le modèle logistique
 
-Séance 2 - 3h  La régression logistique [sexpred](https://competitions.codalab.org/competitions/21853?secret_key=b50bf124-3513-4190-9397-ddd6c2561aea)
+Séance 2 - 3h  Les tests statistiques
 
-Séance 3 - 3h  Apprentissage automatique / validation croisée (Data challenge *histpred2.0*) 
+Séance 3 - 3h  Apprentissage automatique / validation croisée 
 
-Séance 4 - 3h  Apprentissage automatique / validation croisée (Correction)
+Séance 4 - 3h  Apprentissage automatique / validation croisée 
 
 
 
