@@ -1,0 +1,193 @@
+---
+title: "K-fold cross-validation"
+author: "Florent Chuffart"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+---
+
+
+```{r, echo=FALSE, eval=TRUE}
+knitr::opts_chunk$set(collapse=TRUE, comment = "#>", fig.width=9, fig.height=6, eval=TRUE, echo=FALSE, results="hide")
+```
+
+# Loading data
+
+```{r label="loading data"}
+data_train = readRDS(file = "data_train.rds")
+data_test = readRDS(file = "data_test.rds")
+```
+
+# Descriptive statistics 
+
+```{r label="desc stat"}
+head(data_train[,1:6])
+dim(data_train)
+```
+
+# Program
+
+```{r}
+program <- function(data_train, data_test) {
+    gs = colnames(data_test)[-(1:3)]
+    data_pred = data_test[,"histology"]
+    names(data_pred) = rownames(data_test)
+    data_train$histology = as.factor(data_train$histology)
+    data_test$histology  = as.factor(data_test$histology )
+
+    ##
+    ## YOUR CODE BEGINS HERE
+    ## 
+    
+    # use the first gene as predictor for histology
+    g = gs[1] 
+    # plot(data_train$histology, data_train[,g])
+    formula = as.formula(paste0("histology~", g))
+    # print(formula)
+    m = glm(formula, data_train, family =binomial(link = 'logit'))
+    pred = predict.glm(m, data_test, type="response")    
+    data_pred = ifelse(pred<0.5, "AD", "SC")
+
+
+    # # get gene with best logistic regression model as predictor for histology
+    # ms = sapply(gs, function(g){
+    #   # print(g)
+    #   formula = as.formula(paste0("histology~", g))
+    #   m = glm(formula, data_train, family =binomial(link = 'logit'))
+    #   pval = summary(m)$coefficients[2,4]
+    #   beta = m$coefficients[[2]]
+    #   return(c(pval=pval, beta=beta))
+    # })
+    # plot(ms["beta",], -log10(ms["pval",]))
+    # g = colnames(ms[,order(ms["pval",])])[1]
+    # formula = as.formula(paste0("histology~", g))
+    # print(formula)
+    # m = glm(formula, data_train, family =binomial(link = 'logit'))
+    # pred = predict.glm(m, data_test, type="response")
+    # data_pred = ifelse(pred<0.5, "AD", "SC")
+
+    
+    ##
+    ## YOUR CODE ENDS HERE
+    ##
+
+    return(data_pred)    
+}
+```
+# Metric
+
+```{r label="metric"}
+IAP = function(data_truth, data_pred) {
+    # Incorrect Answers Counts
+    return( (length(data_truth) - sum(data_truth == data_pred)) / length(data_truth))
+}
+```
+# Split `data_train` to do 5-fold cross validation
+
+```{r label="params"}
+set.seed(1)
+flds = caret::createFolds(rownames(data_train), k=5)
+sapply(flds, length)
+```
+
+
+# Evaluate program
+
+```{r label="evaluate what?"}
+# if (!exists("mprogram2")) mprogram2 = memoise::memoise(program2)
+# if (!exists("mprogram3")) mprogram3 = memoise::memoise(program3)
+# if (!exists("mprogram4")) mprogram4 = memoise::memoise(program4)
+program_func_names = c(
+  "program", 
+  # "mprogram2",
+  # "mprogram3",
+  # "program4",
+  NULL
+)
+```
+
+```{r label="evaluation GO!!"}
+results = lapply(program_func_names, function(program_func_name) {
+  results = lapply(1:length(flds), function(i) {
+    print(paste0("pfn: ", program_func_name, ", fold: ", i))    
+    tmp_train = data_train[unlist(flds[-i]),] 
+    dim(tmp_train)
+    tmp_test = data_train[unlist(flds[i]),]
+    dim(tmp_test)
+    # data_train = tmp_train
+    # data_test = tmp_test
+
+    # on test set
+    data_truth = tmp_test$histology
+    data_pred = match.fun(program_func_name)(tmp_train, tmp_test)
+    iap_test = IAP(data_pred, data_truth)
+
+    # on train test
+    data_truth = tmp_train$histology
+    data_pred = match.fun(program_func_name)(tmp_train, tmp_train)
+    iap_train = IAP(data_pred, data_truth)
+    return(data.frame(iap=c(iap_train, iap_test), set=c("train", "test"), pfn=program_func_name))
+  })
+  results = do.call(rbind, results)
+  results
+})
+results = do.call(rbind, results)
+results
+# boxplot(iap~set+pfn, results, las=2)
+
+stat = lapply(program_func_names, function(pfn) {
+  foo = lapply(c("train", "test"), function(set) {
+    tmp = results[results$set==set & results$pfn==pfn,]$iap
+    return(list(pfn=pfn, set=set,mean=mean(tmp), sd=sd(tmp)))  
+  })  
+  foo = do.call(rbind, foo)
+  foo
+})
+stat = do.call(rbind, stat)
+stat = data.frame(lapply(data.frame(stat, stringsAsFactors=FALSE), unlist), stringsAsFactors=FALSE)
+rownames(stat) = paste(stat$pfn, stat$set, sep="_")
+ms = stat$mean
+sds = stat$sd
+names(ms) = paste(stat$pfn, stat$set, sep="_")
+centers = barplot(ms, las=2, ylab="iap")
+arrows(centers, ms, centers, ms + sds, length=.1, angle=90)
+arrows(centers, ms, centers, ms - sds, length=.1, angle=90)
+```
+
+
+# Session Information
+
+```{r results="verbatim"}
+sessionInfo()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
