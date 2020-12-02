@@ -17,21 +17,23 @@ knitr::opts_chunk$set(collapse=TRUE, comment = "#>", fig.width=9, fig.height=6, 
 
 # Loading data
 
-```{r label="loading data"}
+```{r label="loading data", echo=TRUE}
 data_train = readRDS(file = "data_train.rds")
 data_test = readRDS(file = "data_test.rds")
 ```
 
 # Descriptive statistics 
 
-```{r label="desc stat"}
+```{r label="desc stat", echo=TRUE, results="verbatim"}
 head(data_train[,1:6])
 dim(data_train)
+head(data_test[,1:6])
+dim(data_test)
 ```
 
-# Program
+# Programs
 
-```{r}
+```{r, echo=TRUE}
 program <- function(data_train, data_test) {
     gs = colnames(data_test)[-(1:3)]
     data_pred = data_test[,"histology"]
@@ -78,24 +80,26 @@ program <- function(data_train, data_test) {
     return(data_pred)    
 }
 ```
+
 # Metric
 
-```{r label="metric"}
+```{r label="metric", echo=TRUE}
+# Incorrect Answers Proportion
 IAP = function(data_truth, data_pred) {
-    # Incorrect Answers Counts
-    return( (length(data_truth) - sum(data_truth == data_pred)) / length(data_truth))
+    return((length(data_truth) - sum(data_truth == data_pred)) / length(data_truth))
 }
 ```
+
 # Split `data_train` to do 5-fold cross validation
 
-```{r label="params"}
+```{r label="folds", echo=TRUE, results="verbatim"}
 set.seed(1)
 flds = caret::createFolds(rownames(data_train), k=5)
 sapply(flds, length)
 ```
 
 
-# Evaluate program
+# Evaluate programs
 
 ```{r label="evaluate what?"}
 # if (!exists("mprogram2")) mprogram2 = memoise::memoise(program2)
@@ -130,7 +134,15 @@ results = lapply(program_func_names, function(program_func_name) {
     data_truth = tmp_train$histology
     data_pred = match.fun(program_func_name)(tmp_train, tmp_train)
     iap_train = IAP(data_pred, data_truth)
-    return(data.frame(iap=c(iap_train, iap_test), set=c("train", "test"), pfn=program_func_name))
+    
+    # on sub part of train test
+    set.seed(1)
+    tmp_trainsub = tmp_train[sample(1:nrow(tmp_train), nrow(tmp_test)),]
+    data_truth = tmp_trainsub$histology
+    data_pred = match.fun(program_func_name)(tmp_trainsub, tmp_trainsub)
+    iap_trainsub = IAP(data_pred, data_truth)
+    
+    return(data.frame(iap=c(iap_train, iap_test, iap_trainsub), set=c("train", "test", "trainsub"), pfn=program_func_name))
   })
   results = do.call(rbind, results)
   results
@@ -140,7 +152,7 @@ results
 # boxplot(iap~set+pfn, results, las=2)
 
 stat = lapply(program_func_names, function(pfn) {
-  foo = lapply(c("train", "test"), function(set) {
+  foo = lapply(c("train", "trainsub", "test"), function(set) {
     tmp = results[results$set==set & results$pfn==pfn,]$iap
     return(list(pfn=pfn, set=set,mean=mean(tmp), sd=sd(tmp)))  
   })  
@@ -153,7 +165,12 @@ rownames(stat) = paste(stat$pfn, stat$set, sep="_")
 ms = stat$mean
 sds = stat$sd
 names(ms) = paste(stat$pfn, stat$set, sep="_")
-centers = barplot(ms, las=2, ylab="iap")
+
+# graph
+
+par(mar=c(8, 4.1, 4.1, 2.1))
+layout(1, respect=TRUE)
+centers = barplot(ms, las=2, ylab="iap", ylim=c(0, max(ms + sds)))
 arrows(centers, ms, centers, ms + sds, length=.1, angle=90)
 arrows(centers, ms, centers, ms - sds, length=.1, angle=90)
 ```
