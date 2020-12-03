@@ -139,7 +139,7 @@ results = lapply(program_func_names, function(program_func_name) {
     set.seed(1)
     tmp_trainsub = tmp_train[sample(1:nrow(tmp_train), nrow(tmp_test)),]
     data_truth = tmp_trainsub$histology
-    data_pred = match.fun(program_func_name)(tmp_trainsub, tmp_trainsub)
+    data_pred = match.fun(program_func_name)(tmp_train, tmp_trainsub)
     iap_trainsub = IAP(data_pred, data_truth)
     
     return(data.frame(iap=c(iap_train, iap_test, iap_trainsub), set=c("train", "test", "trainsub"), pfn=program_func_name))
@@ -152,7 +152,7 @@ results
 # boxplot(iap~set+pfn, results, las=2)
 
 stat = lapply(program_func_names, function(pfn) {
-  foo = lapply(c("train", "trainsub", "test"), function(set) {
+  foo = lapply(c("train", "test", "trainsub"), function(set) {
     tmp = results[results$set==set & results$pfn==pfn,]$iap
     return(list(pfn=pfn, set=set,mean=mean(tmp), sd=sd(tmp)))  
   })  
