@@ -75,6 +75,9 @@ Séance 4 - 3h  Apprentissage automatique / validation croisée
 ```{r child = '06_cours_reglog.Rmd', eval=TRUE, label="exemple"}
 ```
 
+```{r child = '07_cours_reglog.Rmd', eval=TRUE, label="polytomique"}
+```
+
 
 
 

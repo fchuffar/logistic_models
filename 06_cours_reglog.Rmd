@@ -271,6 +271,7 @@ d = data.frame(do.call(rbind, apply(leukoplakia, 1, function(l) {
 colnames(d) = colnames(leukoplakia)[1:3]
 head(d)
 dim(d) 
+table(d$Leukoplakia)
 ```
 
 
@@ -293,6 +294,7 @@ data(vaso)
 d = vaso
 head(d)
 dim(d) 
+table(d$vaso)
 ```
 
 
@@ -316,6 +318,7 @@ data(hdv2003)
 d = hdv2003
 head(d)
 dim(d) 
+table(d$sport)
 ```
 
 
@@ -330,24 +333,6 @@ dim(d)
 ```
 
 
-## Happy or not?
-
-Expliquer la variable `happy`.
-
-- Ecriture analytique du modèle
-- Hypothèse $H_0$ et $H1$
-- Statistique de test 
-- Valeur de la statistique
-- P-valeur associée
-- Conclusion
-
-```{r results="verbatim", echo=TRUE}
-library(questionr)
-data(happy)
-d = happy
-head(d)
-dim(d) 
-```
 
 
 ## dust
@@ -367,6 +352,7 @@ data(dust)
 d = dust
 head(d)
 dim(d) 
+table(d$bronch)
 ```
 
 
@@ -389,6 +375,7 @@ data(birth)
 d = birth
 head(d)
 dim(d) 
+table(d$Episiotomy)
 ```
 
 
@@ -409,4 +396,5 @@ data(foodstamp)
 d = foodstamp
 head(d)
 dim(d) 
+table(d$y)
 ```

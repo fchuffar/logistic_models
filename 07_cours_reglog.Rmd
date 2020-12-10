@@ -1,0 +1,86 @@
+
+
+
+# Introduction à la regression polytomique et ordinale
+
+Extension du modèle logistique à une variable expliquée **multi-modale** (ou encore polytomique, au lieu dichotomique ou bimodale).
+
+Si les modalités sont ordonnées ou parle d’une variable ordinale. 
+
+Ce modèle est appelé **régression logistique polytomique** (à variable dépendante nominale) ou **régression logistique multinomiale**
+
+*i.e.*  $Y$ est qualitative nominale à $K (K > 2)$ modalités. 
+
+Il faut pour cela prendre une modalité de référence $u$ , et estimer $(K-1)$ logits, i.e. pour tout $k$ différent de $u$:
+
+
+$$ln \Big(\frac{P(Y=k|X)}{P(Y=u|X)}\Big) = \beta_kX $$
+
+Rq:
+
+- Il existe différentes manières de définir les logits
+
+- Les équations ( et donc les estimations) sont indépendantes pour chaque valeur de $k$
+
+- Les mêmes variables explicatives sont utilisées pour chacune des équations
+
+**Exemple**
+
+```{r, eval = FALSE}
+table(d$poisson)
+d$s = s
+library(VGAM)
+m= vglm(poisson~s+Bwt, family = multinomial, data = d)
+summary(m)
+```
+
+$ln \Big(\frac{P(Y=k|X)}{P(Y=u|X)}\Big) = \beta_kX$ correspond aux prédicteurs linéaires:
+
+`log(mu[,1]/mu[,6]), log(mu[,2]/mu[,6]), log(mu[,3]/mu[,6]), log(mu[,4]/mu[,6]), log(mu[,5]/mu[,6])`
+
+
+
+Plus de détails [ici](http://wikistat.fr/pdf/st-m-modlin-reglog.pdf).
+
+
+
+
+**Exemple**
+
+
+```{r results="verbatim", echo=TRUE}
+library(VGAM)
+# https://www.jstatsoft.org/article/view/v032i10/v32i10.pdf
+set.seed(1)
+d = data.frame(
+  y=rep(c("A", "B", "C"), each=30),
+  x=c(rnorm(30,0,1), rnorm(30,1,1), rnorm(30,2,1))
+)
+
+layout(1, respect=TRUE)
+plot(x~y, d)
+
+d$y = factor(d$y, levels=c("A", "B", "C"), ordered=FALSE)
+m = VGAM::vglm(y ~ x, family=VGAM::multinomial(), data=d)
+summary(m)
+pred = apply(predict(m, newdata=d, type="response"), 1, function(l) levels(d$y)[which(l==max(l))])
+sum(pred == d$y) / nrow(d)
+
+d$y = factor(d$y, levels=c("A", "B", "C"), ordered=TRUE)
+m = VGAM::vglm(y ~ x, family=VGAM::acat(), data=d)
+summary(m)
+pred = apply(predict(m, newdata=d, type="response"), 1, function(l) levels(d$y)[which(l==max(l))])
+sum(pred == d$y) / nrow(d)
+
+d$y = factor(d$y, levels=c("A", "B", "C"), ordered=TRUE)
+m = VGAM::vglm(y ~ x, family=VGAM::cratio(), data=d)
+summary(m)
+pred = apply(predict(m, newdata=d, type="response"), 1, function(l) levels(d$y)[which(l==max(l))])
+sum(pred == d$y) / nrow(d)
+
+d$y = factor(d$y, levels=c("B", "A", "C"), ordered=TRUE)
+m = VGAM::vglm(y ~ x, family=VGAM::cratio(), data=d)
+summary(m)
+pred = apply(predict(m, newdata=d, type="response"), 1, function(l) levels(d$y)[which(l==max(l))])
+sum(pred == d$y) / nrow(d)
+```

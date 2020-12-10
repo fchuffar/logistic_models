@@ -52,7 +52,7 @@ m2 = glm(Sex~Bwt+Hwt, d, family = binomial(logit))
 
 2. On regroupe les observations par quantiles de distribution de la valeur prédite, *i.e.*, en $K$ groupes $G_k, k\in \{1, ..., K\}$ de taille égale et de valeurs croissantes de $\widehat{\pi}(x_i)$. Souvent, on prend souvent $K=10$.
 
-3. Pour chaque groupe d’observations $G_k$ , on compare le nombre de sujets pour lesquels $Y=1$ ($n_{1k}$), à la somme les $\mathbb{P}(Y=1)$ ($\widehat{n}_{1k}$). De même on calcul $n_{0k}$ et $\widehat{n}_{0k}$.
+3. Pour chaque groupe d’observations $G_k$ , on compare le nombre d’observations pour lesquels $Y=1$ (noté $n_{1k}$), à la somme les $\mathbb{P}(Y=1)$ pour ces même observations (notée $\widehat{n}_{1k}$). De même on calcul $n_{0k}$ le nombre d’observations pour lesquels $Y=0$ et $\widehat{n}_{0k}$ la somme les $\mathbb{P}(Y=0)$ pour ces autres observations.
 
 **Hypotèses**
 

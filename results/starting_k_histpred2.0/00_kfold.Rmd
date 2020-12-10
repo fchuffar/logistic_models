@@ -31,10 +31,41 @@ head(data_test[,1:6])
 dim(data_test)
 ```
 
+
+
+```{r}
+gs = colnames(data_test)[-(1:3)]
+data_train$histology = as.factor(data_train$histology)
+data = as.matrix(data_train[,gs])
+dim(data)
+pca = prcomp(data, scale=TRUE)
+v = pca$sdev * pca$sdev
+p = v / sum(v) * 100
+layout(matrix(1:6,2, byrow=FALSE), respect=TRUE)
+barplot(p)
+# colors = rev(RColorBrewer::brewer.pal(n=11, "Paired"))
+colors = c("red", "blue")
+cols = adjustcolor(colors[as.numeric(data_train[rownames(pca$x),]$histology)], alpha.f=0.5)
+i=3
+j=2
+plot(pca$x[,i], pca$x[,j], xlab=paste0("PC", i, "(", signif(p[i], 3), "%)"), ylab=paste0("PC", j, "(", signif(p[j], 3), "%)"), col=cols, pch=16)
+i=1
+j=3
+plot(pca$x[,i], pca$x[,j], xlab=paste0("PC", i, "(", signif(p[i], 3), "%)"), ylab=paste0("PC", j, "(", signif(p[j], 3), "%)"), col=cols, pch=16)
+i=1
+j=2
+plot(pca$x[,i], pca$x[,j], xlab=paste0("PC", i, "(", signif(p[i], 3), "%)"), ylab=paste0("PC", j, "(", signif(p[j], 3), "%)"), col=cols, pch=16)
+i=4
+j=5
+plot(pca$x[,i], pca$x[,j], xlab=paste0("PC", i, "(", signif(p[i], 3), "%)"), ylab=paste0("PC", j, "(", signif(p[j], 3), "%)"), col=cols, pch=16)
+
+
+```
 # Programs
 
 ```{r, echo=TRUE}
-program <- function(data_train, data_test) {
+# provided in starting kit
+program0 = function(data_train, data_test) {
     gs = colnames(data_test)[-(1:3)]
     data_pred = data_test[,"histology"]
     names(data_pred) = rownames(data_test)
@@ -79,6 +110,148 @@ program <- function(data_train, data_test) {
 
     return(data_pred)    
 }
+
+
+
+# Model SIS, based on:
+# Zhang HH. Discussion of "Sure Independence Screening for Ultra-High Dimensional Feature Space. J R Stat Soc Series B Stat Methodol. 2008;70(5):903. doi:10.1111/j.1467-9868.2008.00674.x
+
+program_sis_n = function(data_train, data_test, n) {
+    gs = colnames(data_test)[-(1:3)]
+    data_pred = data_test[,"histology"]
+    names(data_pred) = rownames(data_test)
+    data_train$histology = as.factor(data_train$histology)
+    data_test$histology  = as.factor(data_test$histology )
+
+    ##
+    ## YOUR CODE BEGINS HERE
+    ## 
+    
+    # get gene with best logistic regression model as predictor for histology
+    ms = sapply(gs, function(g){
+      # print(g)
+      formula = as.formula(paste0("histology~", g))
+      m = glm(formula, data_train, family =binomial(link = 'logit'))
+      pval = summary(m)$coefficients[2,4]
+      beta = m$coefficients[[2]]
+      return(c(pval=pval, beta=beta))
+    })
+    # plot(ms["beta",], -log10(ms["pval",]))
+    g = colnames(ms[,order(ms["pval",])])[1:n]
+    formula = as.formula(paste0("histology~", paste0(g, collapse="+")))
+    # print(formula)
+    m = glm(formula, data_train, family =binomial(link = 'logit'))
+    pred = predict.glm(m, data_test, type="response")
+    data_pred = ifelse(pred<0.5, "AD", "SC")
+
+    
+    ##
+    ## YOUR CODE ENDS HERE
+    ##
+
+    return(data_pred)    
+}
+if (!exists("mprogram_sis_n")) mprogram_sis_n = memoise::memoise(program_sis_n)
+
+# Penalized regression
+glmnet_call = function(data_train, data_test, lambda, alpha, standardize) {
+  # alpha=0 ; lambda=0.01
+  data_train$histology = as.factor(data_train$histology)
+  data_test$histology  = factor(data_test$histology , levels=levels(data_train$histology))
+  m = glmnet::glmnet(
+    x=data.matrix(data_train[,-3]),
+    y=data_train$histology, 
+    family="binomial", 
+    standardize = standardize,
+    lambda=lambda,
+    alpha=alpha
+  )
+  data_pred = predict(m, type="class", newx=data.matrix(data_test[,-3]))
+  data_pred = data_pred[,1]
+  data_pred
+
+  return(data_pred)    
+}
+if (!exists("mglmnet_call")) mglmnet_call = memoise::memoise(glmnet_call)
+
+# xgboost (margaux)
+xgboost_call = function(data_train, data_test, eta, max.depth, nrounds) {
+    gs = colnames(data_test)[-(1:3)]
+    data_pred = data_test[,"histology"]
+    names(data_pred) = rownames(data_test)
+    data_train$histology = as.factor(data_train$histology)
+    data_test$histology  = as.factor(data_test$histology )
+
+    ##
+    ## YOUR CODE BEGINS HERE
+    ## 
+    
+    # Xgboost
+    XTrain = as.matrix(data_train[, gs] )
+    # yTrain = 1-(as.numeric(as.factor(data_train$histology)) -1)
+    yTrain = as.numeric(data_train$histology) - 1
+    XTest = as.matrix(data_test[, gs] )
+
+    # eta=.3; max.depth=3; nrounds=7
+    m = xgboost::xgboost(
+      data=XTrain,
+      yTrain,
+      eta=eta, # weight, 0-1, 0 conservative
+      max.depth=max.depth,
+      nrounds=nrounds,
+      objective="binary:logistic",
+      verbose=0
+    )
+
+    pred = predict(m, XTest)
+    data_pred = ifelse(pred<0.5, "AD", "SC")
+        
+    ##
+    ## YOUR CODE ENDS HERE
+    ##
+
+    return(data_pred)    
+}
+if (!exists("mxgboost_call")) mxgboost_call = memoise::memoise(xgboost_call)
+
+
+# randomForest (margaux)
+randomforest_call = function(data_train, data_test, ntree, mtry) {
+    gs = colnames(data_test)[-(1:3)]
+    data_pred = data_test[,"histology"]
+    names(data_pred) = rownames(data_test)
+    data_train$histology = as.factor(data_train$histology)
+    data_test$histology  = as.factor(data_test$histology )
+
+    ##
+    ## YOUR CODE BEGINS HERE
+    ## 
+        
+    XTrain = as.matrix(data_train[, gs] )
+    XTest = as.matrix(data_test[, gs] )
+
+    XTrain = data_train[, -3]
+    XTest = data_test[, -3]
+    yTrain = data_train$histology
+
+
+    m = randomForest::randomForest(
+       type=classification,
+       x=XTrain,
+       y=yTrain,
+       ntree=ntree,
+       mtry=mtry
+    )
+    data_pred = predict(m, XTest, type = 'response')
+    
+    ##
+    ## YOUR CODE ENDS HERE
+    ##
+
+    return(data_pred)
+    
+}
+if (!exists("mrandomforest_call")) mrandomforest_call = memoise::memoise(randomforest_call)
 ```
 
 # Metric
@@ -94,7 +267,7 @@ IAP = function(data_truth, data_pred) {
 
 ```{r label="folds", echo=TRUE, results="verbatim"}
 set.seed(1)
-flds = caret::createFolds(rownames(data_train), k=5)
+flds = caret::createFolds(rownames(data_train), k=3)
 sapply(flds, length)
 ```
 
@@ -102,20 +275,242 @@ sapply(flds, length)
 # Evaluate programs
 
 ```{r label="evaluate what?"}
-# if (!exists("mprogram2")) mprogram2 = memoise::memoise(program2)
-# if (!exists("mprogram3")) mprogram3 = memoise::memoise(program3)
-# if (!exists("mprogram4")) mprogram4 = memoise::memoise(program4)
-program_func_names = c(
-  "program", 
-  # "mprogram2",
-  # "mprogram3",
-  # "program4",
+
+
+
+
+programs = c(
+  program0 = program0,
+
+  # mprogram_sis_1 = function(data_train, data_test) mprogram_sis_n(data_train, data_test, n=1),
+  # mprogram_sis_2 = function(data_train, data_test) mprogram_sis_n(data_train, data_test, n=2),
+  # mprogram_sis_3 = function(data_train, data_test) mprogram_sis_n(data_train, data_test, n=3),
+  mprogram_sis_4 = function(data_train, data_test) mprogram_sis_n(data_train, data_test, n=4),
+  # mprogram_sis_5 = function(data_train, data_test) mprogram_sis_n(data_train, data_test, n=5),
+  # mprogram_sis_6 = function(data_train, data_test) mprogram_sis_n(data_train, data_test, n=6),
+  # mprogram_sis_7 = function(data_train, data_test) mprogram_sis_n(data_train, data_test, n=7),
+  # mprogram_sis_8 = function(data_train, data_test) mprogram_sis_n(data_train, data_test, n=8),
+  # mprogram_sis_9 = function(data_train, data_test) mprogram_sis_n(data_train, data_test, n=9),
+
+  lasso_1_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-1, alpha=1  , standardize=TRUE),
+  lasso_2_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-2, alpha=1  , standardize=TRUE),
+  lasso_3_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-3, alpha=1  , standardize=TRUE),
+  lasso_4_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-4, alpha=1  , standardize=TRUE),
+  en.75_1_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-1, alpha=.75, standardize=TRUE),
+  en.75_2_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-2, alpha=.75, standardize=TRUE),
+  en.75_3_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-3, alpha=.75, standardize=TRUE),
+  en.75_4_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-4, alpha=.75, standardize=TRUE),
+  en.50_1_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-1, alpha=.50, standardize=TRUE),
+  en.50_2_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-2, alpha=.50, standardize=TRUE),
+  en.50_3_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-3, alpha=.50, standardize=TRUE),
+  en.50_4_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-4, alpha=.50, standardize=TRUE),
+  en.25_1_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-1, alpha=.25, standardize=TRUE),
+  en.25_2_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-2, alpha=.25, standardize=TRUE),
+  en.25_3_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-3, alpha=.25, standardize=TRUE),
+  en.25_4_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-4, alpha=.25, standardize=TRUE),
+  ridge_1_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-1, alpha=0  , standardize=TRUE),
+  ridge_2_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-2, alpha=0  , standardize=TRUE),
+  ridge_3_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-3, alpha=0  , standardize=TRUE),
+  ridge_4_raw = function(data_train, data_test) mglmnet_call(data_train, data_test, lambda=10^-4, alpha=0  , standardize=TRUE),
+
+
+  # mprogram_xgg_1_3_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.1, max.depth=3, nrounds=1),
+  # mprogram_xgg_2_3_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=3, nrounds=1),
+  # mprogram_xgg_3_3_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.3, max.depth=3, nrounds=1),
+  # mprogram_xgg_4_3_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=1),
+  # mprogram_xgg_5_3_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.5, max.depth=3, nrounds=1),
+  # mprogram_xgg_6_3_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.6, max.depth=3, nrounds=1),
+  # mprogram_xgg_7_3_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.7, max.depth=3, nrounds=1),
+  # mprogram_xgg_8_3_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.8, max.depth=3, nrounds=1),
+  # mprogram_xgg_9_3_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.9, max.depth=3, nrounds=1),
+  #
+  # mprogram_xgg_1_3_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.1, max.depth=3, nrounds=2),
+  # mprogram_xgg_2_3_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=3, nrounds=2),
+  # mprogram_xgg_3_3_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.3, max.depth=3, nrounds=2),
+  # mprogram_xgg_4_3_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=2),
+  # mprogram_xgg_5_3_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.5, max.depth=3, nrounds=2),
+  # mprogram_xgg_6_3_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.6, max.depth=3, nrounds=2),
+  # mprogram_xgg_7_3_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.7, max.depth=3, nrounds=2),
+  # mprogram_xgg_8_3_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.8, max.depth=3, nrounds=2),
+  # mprogram_xgg_9_3_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.9, max.depth=3, nrounds=2),
+  #
+  # mprogram_xgg_1_3_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.1, max.depth=3, nrounds=3),
+  # mprogram_xgg_2_3_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=3, nrounds=3),
+  # mprogram_xgg_3_3_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.3, max.depth=3, nrounds=3),
+  # mprogram_xgg_4_3_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=3),
+  # mprogram_xgg_5_3_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.5, max.depth=3, nrounds=3),
+  # mprogram_xgg_6_3_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.6, max.depth=3, nrounds=3),
+  # mprogram_xgg_7_3_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.7, max.depth=3, nrounds=3),
+  # mprogram_xgg_8_3_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.8, max.depth=3, nrounds=3),
+  # mprogram_xgg_9_3_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.9, max.depth=3, nrounds=3),
+  #
+  # mprogram_xgg_1_3_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.1, max.depth=3, nrounds=4),
+  # mprogram_xgg_2_3_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=3, nrounds=4),
+  # mprogram_xgg_3_3_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.3, max.depth=3, nrounds=4),
+  # mprogram_xgg_4_3_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=4),
+  # mprogram_xgg_5_3_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.5, max.depth=3, nrounds=4),
+  # mprogram_xgg_6_3_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.6, max.depth=3, nrounds=4),
+  # mprogram_xgg_7_3_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.7, max.depth=3, nrounds=4),
+  # mprogram_xgg_8_3_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.8, max.depth=3, nrounds=4),
+  # mprogram_xgg_9_3_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.9, max.depth=3, nrounds=4),
+  #
+  # mprogram_xgg_1_3_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.1, max.depth=3, nrounds=5),
+  # mprogram_xgg_2_3_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=3, nrounds=5),
+  # mprogram_xgg_3_3_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.3, max.depth=3, nrounds=5),
+  # mprogram_xgg_4_3_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=5),
+  # mprogram_xgg_5_3_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.5, max.depth=3, nrounds=5),
+  # mprogram_xgg_6_3_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.6, max.depth=3, nrounds=5),
+  # mprogram_xgg_7_3_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.7, max.depth=3, nrounds=5),
+  # mprogram_xgg_8_3_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.8, max.depth=3, nrounds=5),
+  # mprogram_xgg_9_3_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.9, max.depth=3, nrounds=5),
+  #
+  # mprogram_xgg_1_3_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.1, max.depth=3, nrounds=6),
+  # mprogram_xgg_2_3_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=3, nrounds=6),
+  # mprogram_xgg_3_3_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.3, max.depth=3, nrounds=6),
+  # mprogram_xgg_4_3_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=6),
+  # mprogram_xgg_5_3_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.5, max.depth=3, nrounds=6),
+  # mprogram_xgg_6_3_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.6, max.depth=3, nrounds=6),
+  # mprogram_xgg_7_3_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.7, max.depth=3, nrounds=6),
+  # mprogram_xgg_8_3_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.8, max.depth=3, nrounds=6),
+  # mprogram_xgg_9_3_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.9, max.depth=3, nrounds=6),
+  #
+  # mprogram_xgg_1_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.1, max.depth=3, nrounds=7),
+  # mprogram_xgg_2_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=3, nrounds=7),
+  # mprogram_xgg_3_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.3, max.depth=3, nrounds=7),
+  # mprogram_xgg_4_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=7),
+  # mprogram_xgg_5_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.5, max.depth=3, nrounds=7),
+  # mprogram_xgg_6_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.6, max.depth=3, nrounds=7),
+  # mprogram_xgg_7_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.7, max.depth=3, nrounds=7),
+  # mprogram_xgg_8_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.8, max.depth=3, nrounds=7),
+  # mprogram_xgg_9_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.9, max.depth=3, nrounds=7),
+  #
+  # mprogram_xgg_1_3_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.1, max.depth=3, nrounds=8),
+  # mprogram_xgg_2_3_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=3, nrounds=8),
+  # mprogram_xgg_3_3_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.3, max.depth=3, nrounds=8),
+  # mprogram_xgg_4_3_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=8),
+  # mprogram_xgg_5_3_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.5, max.depth=3, nrounds=8),
+  # mprogram_xgg_6_3_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.6, max.depth=3, nrounds=8),
+  # mprogram_xgg_7_3_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.7, max.depth=3, nrounds=8),
+  # mprogram_xgg_8_3_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.8, max.depth=3, nrounds=8),
+  # mprogram_xgg_9_3_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.9, max.depth=3, nrounds=8),
+  #
+  # mprogram_xgg_1_3_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.1, max.depth=3, nrounds=9),
+  # mprogram_xgg_2_3_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=3, nrounds=9),
+  # mprogram_xgg_3_3_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.3, max.depth=3, nrounds=9),
+  # mprogram_xgg_4_3_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=9),
+  # mprogram_xgg_5_3_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.5, max.depth=3, nrounds=9),
+  # mprogram_xgg_6_3_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.6, max.depth=3, nrounds=9),
+  # mprogram_xgg_7_3_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.7, max.depth=3, nrounds=9),
+  # mprogram_xgg_8_3_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.8, max.depth=3, nrounds=9),
+  # mprogram_xgg_9_3_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.9, max.depth=3, nrounds=9),
+
+
+
+  # mprogram_xgg_4_1_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=1, nrounds=6),
+  # mprogram_xgg_4_2_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=6),
+  # mprogram_xgg_4_3_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=6),
+  # mprogram_xgg_4_4_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=4, nrounds=6),
+  # mprogram_xgg_4_5_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=5, nrounds=6),
+  # mprogram_xgg_4_6_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=6, nrounds=6),
+  # mprogram_xgg_4_7_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=7, nrounds=6),
+  # mprogram_xgg_4_8_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=8, nrounds=6),
+  # mprogram_xgg_4_9_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=9, nrounds=6),
+
+  # mprogram_xgg_4_2_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=1),
+  # mprogram_xgg_4_2_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=2),
+  # mprogram_xgg_4_2_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=3),
+  # mprogram_xgg_4_2_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=4),
+  # mprogram_xgg_4_2_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=5),
+  # mprogram_xgg_4_2_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=6),
+  # mprogram_xgg_4_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=7),
+  # mprogram_xgg_4_2_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=8),
+  # mprogram_xgg_4_2_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=9),
+
+  # mprogram_xgg_4_1_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=1, nrounds=7),
+  # mprogram_xgg_4_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=7),
+  # mprogram_xgg_4_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=3, nrounds=7),
+  # mprogram_xgg_4_4_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=4, nrounds=7),
+  # mprogram_xgg_4_5_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=5, nrounds=7),
+  # mprogram_xgg_4_6_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=6, nrounds=7),
+  # mprogram_xgg_4_7_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=7, nrounds=7),
+  # mprogram_xgg_4_8_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=8, nrounds=7),
+  # mprogram_xgg_4_9_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=9, nrounds=7),
+
+  # mprogram_xgg_1_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.1, max.depth=2, nrounds=7),
+  # mprogram_xgg_2_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=7),
+  # mprogram_xgg_3_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.3, max.depth=2, nrounds=7),
+  # mprogram_xgg_4_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.4, max.depth=2, nrounds=7),
+  # mprogram_xgg_5_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.5, max.depth=2, nrounds=7),
+  # mprogram_xgg_6_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.6, max.depth=2, nrounds=7),
+  # mprogram_xgg_7_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.7, max.depth=2, nrounds=7),
+  # mprogram_xgg_8_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.8, max.depth=2, nrounds=7),
+  # mprogram_xgg_9_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.9, max.depth=2, nrounds=7),
+
+  # mprogram_xgg_2_1_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=1, nrounds=7),
+  # mprogram_xgg_2_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=7),
+  # mprogram_xgg_2_3_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=3, nrounds=7),
+  # mprogram_xgg_2_4_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=4, nrounds=7),
+  # mprogram_xgg_2_5_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=5, nrounds=7),
+  # mprogram_xgg_2_6_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=6, nrounds=7),
+  # mprogram_xgg_2_7_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=7, nrounds=7),
+  # mprogram_xgg_2_8_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=8, nrounds=7),
+  # mprogram_xgg_2_9_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=9, nrounds=7),
+
+  # mprogram_xgg_2_2_1 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=1),
+  # mprogram_xgg_2_2_2 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=2),
+  # mprogram_xgg_2_2_3 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=3),
+  # mprogram_xgg_2_2_4 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=4),
+  # mprogram_xgg_2_2_5 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=5),
+  # mprogram_xgg_2_2_6 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=6),
+  # mprogram_xgg_2_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=7),
+  # mprogram_xgg_2_2_8 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=8),
+  # mprogram_xgg_2_2_9 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=9),
+
+  mprogram_xgg_2_2_7 = function(data_train, data_test) mxgboost_call(data_train, data_test, eta=0.2, max.depth=2, nrounds=7),
+
+
+
+
+
+  # mprogram_rf_1_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=1, mtry=10),
+  # mprogram_rf_2_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=2, mtry=10),
+  # mprogram_rf_3_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=3, mtry=10),
+  # mprogram_rf_5_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=5, mtry=10),
+  #
+  # mprogram_rf_10_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=10, mtry=10),
+  # mprogram_rf_20_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=20, mtry=10),
+  # mprogram_rf_30_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=30, mtry=10),
+  # mprogram_rf_50_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=50, mtry=10),
+  # mprogram_rf_10_20 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=10, mtry=20),
+  # mprogram_rf_20_20 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=20, mtry=20),
+  # mprogram_rf_30_20 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=30, mtry=20),
+  # mprogram_rf_50_20 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=50, mtry=20),
+  # mprogram_rf_10_30 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=10, mtry=30),
+  # mprogram_rf_20_30 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=20, mtry=30),
+  # mprogram_rf_30_30 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=30, mtry=30),
+  # mprogram_rf_50_30 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=50, mtry=30),
+  #
+  # mprogram_rf_100_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=100, mtry=10),
+  # mprogram_rf_200_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=200, mtry=10),
+  # mprogram_rf_300_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=300, mtry=10),
+  # mprogram_rf_500_10 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=500, mtry=10),
+  # mprogram_rf_100_20 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=100, mtry=20),
+  # mprogram_rf_200_20 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=200, mtry=20),
+  # mprogram_rf_300_20 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=300, mtry=20),
+  # mprogram_rf_500_20 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=500, mtry=20),
+  # mprogram_rf_100_30 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=100, mtry=30),
+  # mprogram_rf_200_30 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=200, mtry=30),
+  # mprogram_rf_300_30 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=300, mtry=30),
+  # mprogram_rf_500_30 = function(data_train, data_test) mrandomforest_call(data_train, data_test, ntree=500, mtry=30),
+
+
   NULL
 )
+
 ```
 
 ```{r label="evaluation GO!!"}
-results = lapply(program_func_names, function(program_func_name) {
+results = lapply(names(programs), function(program_func_name) {
   results = lapply(1:length(flds), function(i) {
     print(paste0("pfn: ", program_func_name, ", fold: ", i))    
     tmp_train = data_train[unlist(flds[-i]),] 
@@ -127,19 +522,19 @@ results = lapply(program_func_names, function(program_func_name) {
 
     # on test set
     data_truth = tmp_test$histology
-    data_pred = match.fun(program_func_name)(tmp_train, tmp_test)
+    data_pred = programs[[program_func_name]](tmp_train, tmp_test)
     iap_test = IAP(data_pred, data_truth)
 
     # on train test
     data_truth = tmp_train$histology
-    data_pred = match.fun(program_func_name)(tmp_train, tmp_train)
+    data_pred = programs[[program_func_name]](tmp_train, tmp_train)
     iap_train = IAP(data_pred, data_truth)
     
     # on sub part of train test
     set.seed(1)
     tmp_trainsub = tmp_train[sample(1:nrow(tmp_train), nrow(tmp_test)),]
     data_truth = tmp_trainsub$histology
-    data_pred = match.fun(program_func_name)(tmp_train, tmp_trainsub)
+    data_pred = programs[[program_func_name]](tmp_train, tmp_trainsub)
     iap_trainsub = IAP(data_pred, data_truth)
     
     return(data.frame(iap=c(iap_train, iap_test, iap_trainsub), set=c("train", "test", "trainsub"), pfn=program_func_name))
@@ -151,7 +546,7 @@ results = do.call(rbind, results)
 results
 # boxplot(iap~set+pfn, results, las=2)
 
-stat = lapply(program_func_names, function(pfn) {
+stat = lapply(names(programs), function(pfn) {
   foo = lapply(c("train", "test", "trainsub"), function(set) {
     tmp = results[results$set==set & results$pfn==pfn,]$iap
     return(list(pfn=pfn, set=set,mean=mean(tmp), sd=sd(tmp)))  
@@ -161,18 +556,18 @@ stat = lapply(program_func_names, function(pfn) {
 })
 stat = do.call(rbind, stat)
 stat = data.frame(lapply(data.frame(stat, stringsAsFactors=FALSE), unlist), stringsAsFactors=FALSE)
+stat = stat[!duplicated(paste(stat$pfn, stat$set, sep="_")),]
 rownames(stat) = paste(stat$pfn, stat$set, sep="_")
 ms = stat$mean
 sds = stat$sd
 names(ms) = paste(stat$pfn, stat$set, sep="_")
 
 # graph
-
 par(mar=c(8, 4.1, 4.1, 2.1))
 layout(1, respect=TRUE)
 centers = barplot(ms, las=2, ylab="iap", ylim=c(0, max(ms + sds)))
-arrows(centers, ms, centers, ms + sds, length=.1, angle=90)
-arrows(centers, ms, centers, ms - sds, length=.1, angle=90)
+arrows(centers, ms, centers, ms + sds, length=1/length(centers), angle=90)
+arrows(centers, ms, centers, ms - sds, length=1/length(centers), angle=90)
 ```
 
 
