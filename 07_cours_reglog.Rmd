@@ -73,6 +73,14 @@ pred = apply(predict(m, newdata=d, type="response"), 1, function(l) levels(d$y)[
 sum(pred == d$y) / nrow(d)
 
 d$y = factor(d$y, levels=c("A", "B", "C"), ordered=TRUE)
+m = VGAM::vglm(y ~ x, family=VGAM::acat(), data=d)
+summary(m)
+pred = apply(predict(m, newdata=d, type="response"), 1, function(l) levels(d$y)[which(l==max(l))])
+sum(pred == d$y) / nrow(d)
+
+
+
+d$y = factor(d$y, levels=c("A", "B", "C"), ordered=TRUE)
 m = VGAM::vglm(y ~ x, family=VGAM::cratio(), data=d)
 summary(m)
 pred = apply(predict(m, newdata=d, type="response"), 1, function(l) levels(d$y)[which(l==max(l))])
@@ -83,4 +91,76 @@ m = VGAM::vglm(y ~ x, family=VGAM::cratio(), data=d)
 summary(m)
 pred = apply(predict(m, newdata=d, type="response"), 1, function(l) levels(d$y)[which(l==max(l))])
 sum(pred == d$y) / nrow(d)
+
+
+
+
+
+
+
+set.seed(1)
+d = data.frame(
+  y=rep(c("A", "B", "C", "D"), each=30),
+  x=c(rnorm(30,0,1), rnorm(30,1,1), rnorm(30,2,1), rnorm(30,3,1))
+)
+d$y = factor(d$y, levels=c("A", "B", "C", "D"), ordered=FALSE)
+m = VGAM::vglm(y ~ x, family=VGAM::multinomial(), data=d)
+summary(m)
+
+d$y = factor(d$y, levels=c("A", "B", "C", "D"), ordered=TRUE)
+m = VGAM::vglm(y ~ x, family=VGAM::acat(), data=d)
+summary(m)
+
+d$y = factor(d$y, levels=c("A", "B", "C", "D"), ordered=TRUE)
+m = VGAM::vglm(y ~ x, family=VGAM::cumulative(), data=d)
+summary(m)
+
+d$y = factor(d$y, levels=c("A", "B", "C", "D"), ordered=TRUE)
+m = VGAM::vglm(y ~ x, family=VGAM::cratio(), data=d)
+summary(m)
+
+d$y = factor(d$y, levels=c("A", "B", "C", "D"), ordered=TRUE)
+m = VGAM::vglm(y ~ x, family=VGAM::sratio(), data=d)
+summary(m)
+pred = apply(predict(m, newdata=d, type="response"), 1, function(l) levels(d$y)[which(l==max(l))])
+sum(pred == d$y) / nrow(d)
+
+
+
+
+
+
+
+
+
+
+
+
+partypref <- matrix(data=c(114, 10, 53,224,134,9,42,226,114,8,23,174,339,30,13, + 414,42,5,44,161,88,10, 60,171,90,8,31,168,413,23,14,375), nrow=8, byrow=TRUE)
+partydat<-data.frame(
+  party=c(rep("CDU",sum(partypref[,1])),rep("SPD",sum(partypref[,4])),
+  rep("The Liberals",sum(partypref[,2])),rep("The Greens",sum(partypref[,3]))), sex=c(rep(0,sum(partypref[1:4,1])),rep(1,sum(partypref[5:8,1])),
+  rep(0,sum(partypref[1:4,4])),rep(1,sum(partypref[5:8,4])),
+  rep(0,sum(partypref[1:4,2])),rep(1,sum(partypref[5:8,2])),
+  rep(0,sum(partypref[1:4,3])),rep(1,sum(partypref[5:8,3]))),
+  age=c(rep(c(1:4,1:4), partypref[,1]),rep(c(1:4,1:4), partypref[,4]),
+  rep(c(1:4,1:4), partypref[,2]),rep(c(1:4,1:4), partypref[,3]))
+)
+d = partydat
+head(d)
+dim(d) 
+table(d$party)
+
+
+
+vignette("multinomial-party2")
+
+
+
+
+
+
+
+
+
 ```
