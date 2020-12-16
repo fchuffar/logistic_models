@@ -153,7 +153,7 @@ table(d$party)
 
 
 
-vignette("multinomial-party2")
+# vignette("multinomial-party2")
 
 
 
