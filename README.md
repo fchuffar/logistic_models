@@ -18,8 +18,3 @@ rmarkdown::render("cours_reglog.Rmd")
 
 RStudio
 
-# Knit
-
-```
-
-```
