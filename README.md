@@ -22,6 +22,6 @@ RStudio
 # Packages 
 
 ```
-ResourceSelection
-
+install.packages(ResourceSelection)
+install.packages(c("catdata", "questionr", "titanic"))
 ```
