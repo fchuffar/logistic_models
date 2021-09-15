@@ -44,13 +44,13 @@ options(contrasts=c("contr.sum", "contr.poly"))
 
 **Organisation prévisionnelle**
 
-Séance 1 - 3h  Le modèle logistique
+Séance 1 - 3h  git, Le modèle logistique, Les tests statistiques
 
-Séance 2 - 3h  Les tests statistiques
+Séance 2 - 3h  
 
 Séance 3 - 3h  Apprentissage automatique / validation croisée 
 
-Séance 4 - 3h  Apprentissage automatique / validation croisée 
+Séance 4 - 3h  Poisson
 
 
 
@@ -75,7 +75,10 @@ Séance 4 - 3h  Apprentissage automatique / validation croisée
 ```{r child = '06_cours_reglog.Rmd', eval=TRUE, label="exemple"}
 ```
 
-```{r child = '07_cours_reglog.Rmd', eval=TRUE, label="polytomique"}
+```{r child = '07_cours_reglog.Rmd', eval=FALSE, label="polytomique"}
+```
+
+```{r label="Poisson"}
 ```
 
 

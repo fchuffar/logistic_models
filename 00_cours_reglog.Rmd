@@ -12,7 +12,7 @@ avec $\beta=(\beta_0, \beta_1, ..., \beta_p)$ estimé par les moindres carrées
 
 $$\beta = argmin(\sum_{i=1}^{n} {(y_i - \beta_0 - \beta_1x_{1,i} - ... - \beta_px_{p,i})^2)}$$ 
 
-Sous certaines hypothèses (*exercice : lesquelles ?*), l’estimateur des moindres carrés est équivalent à l’estimateur du maximum de vraisemblance :
+Sous certaines conditions (*lesquelles ?*), l’estimateur des moindres carrés maximise la vraisemblance.
 
 - La valeur estimée (ajustée) de Y est $\widehat{y}_i =  \widehat{\beta}_0 + \widehat{\beta}_1X_1 +  ... + \widehat{\beta}_pX_p$
 - Les résidus sont estimés par $e_i = y_i -\widehat{y}_i$
