@@ -1,65 +1,131 @@
-# Le modèle logistique
-
-On cherche une relation entre une **variable binaire** $Y$ (observée, à expliquer) et un ensemble de variables explicatives $X$ (quantitatives ou qualitatives). 
-
-$$Y \sim X$$
-
-
-On distingue : 
-
-  - les modèles explicatifs
-  - les modèles predictifs
-
-Exemples de variables binaires à expliquer : 
-  
-  - Le sexe en fonction du poids (regression logistique simple)
-  - Maladie coronarienne en fonction d’HTA et cholestérol
-  - Survenue de cancer en fonction d’expositions chimiques
-  - Consommation d’un bien selon variables sociodémographiques
-  - Risque d’accoucher d’un bébé de faible poids (<2500g) en fonction de l’âge de la mère, du poids, du tabagisme.
-  - le sexe en fonction de l’expression des gènes (challenge *sexpred*)
-  - l’histologie en fonction de l’expression des gènes (challenge *histpred*)
-  - la survie à 24 mois en fonction de l’expression des gènes (challenge *virpred*)
 
 
 
 
-## Construction du modèle logistique
 
-On considère dans ce paragraphe la regression logistique univariée : $Y \sim x$, avec x une variable quantitaive.
+# Modèles linéaires (rappel) 
 
-On pose $Y$ la variable binaire, $x$ le vecteur de la variable explicative et **on veut modéliser : ** 
+$Y$ est expliquée (modélisée) par  les variables explicatives $X= (X_1,X_2,...,X_p)$.
 
-$$E(Y|x) = \mathbb{P}(Y=1|x) = \pi (x)$$
+Si $p=1$, c’est une fonction affine de X.
 
-
-### Variable de Bernoulli
-
-Toute variable binaire peut être codée par 0 ou 1. 
-On considére alors cette variable comme une variable de Bernoulli qui suit la loi de probabilité de paramètre $p$ :
+$Y$ est quantitative, $X$ peut être quantitative (regression lineaire) ou qualitative (ANOVA).
  
-$$\mathbb{P}(Y=1)=p$$
-$$\mathbb{P}(Y=0)=1-p$$ 
+Modèle est noté : 
 
-résumé par :
+$$\mathbb{E}(Y)  = \beta X = \beta_0 + \beta_1X_1 + ... + \beta_pX_p$$
 
-$$\mathbb{P}(Y=k)=p^k(1-p)^{1-k}, k \in \{0,1\}$$ 
+avec $\beta=(\beta_0, \beta_1, ..., \beta_p)$ estimé par les moindres carrées :
 
-**Note** : si on considére $p$ constant (indépendant de $x$), la valeur de $p$ qui maximise la vraisemblance des observations est la proportion de 1 dans les observations (*exercice : proposer une démonstration*). 
+$$\beta = argmin(\sum_{i=1}^{n} {(y_i - \beta_0 - \beta_1x_{1,i} - ... - \beta_px_{p,i})^2})$$ 
 
-### Approche naïve avec la regression lineaire
+La valeur ajustée pour l’individu $i$ est noté :
+$\widehat y_i  = \beta X_i = \beta_0 + \beta_1 X_{1,i} + ... + \beta_pX_{p,i}$, 
+ainsi : 
 
-Considérons que Y suit une loi de Bernoulli de paramètre $\pi (x)$ une fonction linéaire de $x$ : 
+$$\beta = argmin(\sum_{i=1}^{n} {(y_i - \widehat y_i)^2})$$ 
+
+
+Les résidus sont notés  $e_i = y_i -\widehat{y}_i$, soit : 
+
+$$\beta = argmin(\sum_{i=1}^{n} {e_i^2})$$ 
+
+
+Le pourcentage de variance expliquée est noté :
+$$R^2 = \frac{\sum_{i}{(y_i -\overline{y}_i)^2 - e_i^2}}{\sum_{i=1}^{n}{(y_i -\overline{y}_i)^2}}$$
+
+
+
+
+
+```{r message=FALSE, warning=FALSE}
+d = MASS::cats
+m = lm(Bwt~Hwt, d)
+layout(matrix(1:2, 1), respect=TRUE)
+plot(
+  m$model$Hwt, m$model$Bwt,
+  ylab="Body weight (Bwt)", xlab="Heart weight (Hwt)",
+  main="Regression lineaire (Bwt~Hwt)"
+)
+abline(m, col=2)
+arrows(d$Hwt, d$Bwt, d$Hwt, d$Bwt-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
+
+i = which(d$Hwt==17.2)
+points(m$model[i,]$Hwt, m$model[i,]$Bwt,  pch=16)
+points(m$model[i,]$Hwt, d[i,]$Bwt-m$residuals[i],  pch=16)
+arrows(d[i,]$Hwt, d[i,]$Bwt, d[i,]$Hwt, d[i,]$Bwt-m$residuals[i], col=4, lwd=2, length=0.1)
+text(m$model[i,]$Hwt, m$model[i,]$Bwt, "yi", pos=1, cex=1.3)
+text(m$model[i,]$Hwt, d[i,]$Bwt-m$residuals[i]/2,  "ei", pos=4, cex=1.3)
+text(m$model[i,]$Hwt, d[i,]$Bwt-m$residuals[i],  "^yi", pos=3, cex=1.3)
+legend("bottomright",c("regression line", "residuals"), col=c(2,4), lty=1, cex=.8)
+
+
+boxplot(Bwt~Sex, d, main="ANOVA (Bwt~Sex)", xlab="Sex", ylab="Bwt", outline=FALSE, ylim=range(d$Bwt))
+m = lm(Bwt~Sex, d)
+m$coefficients
+abline(h=m$coefficients[[1]] + m$coefficients[[2]], col=2)
+abline(h=m$coefficients[[1]], col=2, lty=2)
+
+x = jitter(as.numeric(d$Sex), 1.5)
+points(x, d$Bwt)
+arrows(x, d$Bwt, x, d$Bwt-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
+legend("topleft",c("b_0", "b_0+b_1", "residuals"), col=c(2,2,4), lty=c(2,1,1), cex=.8)
+
+# t.test
+# 1 null hypothesis
+# H_0: p_h==_f
+# H_1: p_h!=p_f
+# 2 risk
+# alpha = 5%
+# 3 test hypothesis
+# residuals~N?
+shapiro.test(d[d$Sex=="F",]$Bwt)
+shapiro.test(d[d$Sex=="M",]$Bwt)
+# -> OK
+# 4 t.test
+t.test(d[d$Sex=="F",]$Bwt, d[d$Sex=="M",]$Bwt)
+anova(m)
+# 5 conclusion
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Variable explicative quantitative
+
+On considère dans cette section x une variable quantitaive et on cherche à modéliser
+
+$Y ~ x$
+
+
+### Tentative avec la regression linéaire
+
+
+Considérons un second modèle dans lequel $\pi(x) = \beta_0 + \beta_1 x$ :
 
 $$\mathbb{P}(Y=1|x)=\pi (x) = \beta_0 + \beta_1 x$$
 
 Problème $\pi(x)$ prends des valeurs négatives et des valeurs supérieur à 1
 
-```{r echo=TRUE}
-d = MASS::cats
-```
-
 ```{r}
+d = MASS::cats
+
 layout(1, respect=TRUE)
 s = as.numeric(d$Sex) - 1
 plot(d$Bwt, s, main="Regression linéaire (Sex~Bwt)", xlab="Bwt", ylab="Sex", ylim=c(0,1.5))
@@ -71,17 +137,43 @@ legend("bottomright",c("regression line", "residuals"), col=c(2,4), lty=1, cex=0
 ```
 
 
-### la fonction logit
+### La fonction logit
+
+On introduit donc la fonction *logit*
+
+
+
+
+
 
 \begin{eqnarray}
-              \text{logit: } ]0,1[ & \rightarrow & \mathbb{R} \\
-                                 x & \rightarrow & logit(x)  =  log(\frac{x}{1-x}) \\ 
+\text{logit: } ]0,1[ &\rightarrow& \mathbb{R}                  &\qquad& \lim_{x\to0} logit(x) &=& -\infty  \hspace{12cm}\\
+                   x &\rightarrow& logit(x)=log(\frac{x}{1-x}) &\qquad& \lim_{x\to1} logit(x) &=& +\infty  \hspace{12cm}\\
 \end{eqnarray}
 
+
+
+
+
 \begin{eqnarray}
-              \text{logit$^{-1}$: } \mathbb{R}& \rightarrow &  ]0,1[  \\
-                      x & \rightarrow & logit^{-1}(x) = \frac{1}{1+e^{-x}}  
+\hspace{12cm} \text{logit$^{-1}$: } \mathbb{R} &\rightarrow& ]0,1[                            &\qquad& \lim_{x\to-\infty} logit^{-1}(x) &=& 0\\
+\hspace{12cm}                                x &\rightarrow& logit^{-1}(x)=\frac{1}{1+e^{-x}} &\qquad& \lim_{x\to+\infty} logit^{-1}(x) &=& 1\\
 \end{eqnarray}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r}
 layout(matrix(1:2, 1), respect=TRUE)
@@ -91,22 +183,10 @@ x = seq(-4, 4,  length.out=100)
 plot(x, 1 / (1+exp(-x)), main="logit^-1", type="l")
 ```
 
-$$ \lim_{x\to0} logit(x) = -\infty \ \ \ \ \ \ \ \ \ \  \lim_{x\to1} logit(x) = +\infty $$
-
-$$ \lim_{x\to-\infty} logit^{-1}(x) = 0 \ \ \ \ \ \ \ \ \ \  \lim_{x\to+\infty} logit^{-1}(x) = 1 $$
-
-
-
-
-
-
-### Présentation du modèle logistique simple
-
-Considérons que Y suit une loi de Bernoulli de paramètre $\pi (x)$ telle que :
+Et on considérele le modèle logistique dans lequel $\pi(x) = logit^{-1}(\beta_0 + \beta_1 x)$ :
 
 $$\mathbb{P}(Y=1|x) = \pi(x) = logit^{-1}(\beta_0 + \beta_1 x)$$ 
 
-On appelle $\pi(x)$, le prédicteur de Y en fonction de x.
 
 ```{r}
 layout(1, respect=TRUE)
@@ -121,8 +201,9 @@ py1x = function(t,m) {
   1/(1 + exp(-x))
 }
 arrows(d$Bwt, s, d$Bwt, py1x(d$Bwt,m), col=adjustcolor(4, alpha.f=0.2), length=0.05, lwd=3)
-legend("bottomright", c("Y=Pi(X)=logit^-1(b.X)", "1 - P(Y=y_i|X=x_i)"), col=c(2,4), lty=1, cex=0.6)
+legend("bottomright", c(expression(paste("P(Y=1|x)=", pi, "(x)=", logit^-1, "(", beta , "x)")), expression("1 - P(Y=y_i|X=x_i)")), col=c(2,4), lty=1, cex=0.6)
 ```
+
 
 On **généralise** aisement le modèle logistique pour des variables explicatives **multivariées** $X=(X_1,...,X_p))$, $X_i$ pouvant être **qualitatives** ou **quantitaves**, $\beta=(\beta_0, \beta_1, ..., \beta_p)$ : 
 
@@ -142,7 +223,7 @@ $$\mathbb{P}(Y=1|X) = \pi(X) = logit^{-1}(\beta X)$$
 
 
 
-## Mesures d'interêt
+## Mesures d'intérêt
 
 On définit les **Odds** :
 
@@ -171,7 +252,7 @@ m$coefficients
 summary(m)
 ```
 
-On définit définit les **Odds Ratio** :
+On définit les **odds ratio** :
 
 $$OR_{u/v} = \frac{odd(X = u)}{odd(X=v)} = e^{\beta (u-v)}$$
 
@@ -183,14 +264,14 @@ $OR$ est directement calculable à partir des coefficients de la régression $\b
 
 
 
-On définit définit le **risque relatif** :
+On définit le **risque relatif** :
 
 $$ RR_{u/v} = \frac{\pi(X = u)}{\pi(X=v)} = \frac{P(Y=1|X=u)}{P(Y=1|X=v)} $$
 
-Note : si $p$ est petit alors $\frac{p}{1-p} \simeq p$ et l’Odds Ratio est proche du risque relatif.
+Note : si $p$ est petit alors $\frac{p}{1-p} \simeq p$ et l’*odds ratio* est proche du risque relatif.
 
 
-$RR$ estime le risque (*i.e.* la probabilité) d’être par exemple malade.
+$RR$ estime le risque d’être par exemple malade.
 
 $OR$ et $RR$ donnent la même indication sur la relation entre $Y$ et $X$ :
 

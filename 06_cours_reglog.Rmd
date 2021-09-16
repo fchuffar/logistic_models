@@ -1,10 +1,10 @@
 # Travaux pratiques
 
-## Cancer pédiatriques
+## Cancers pédiatriques
 
-On s’intéresse au rôle de différents facteurs dans la survenue de cancer pédiatriques (chez l’enfant).
+On s’intéresse au rôle de différents facteurs dans la survenue de cancers pédiatriques (chez l’enfant).
 
-Ce premier tableau présente la distribution de cancer de l’enfant selon le statut tabagique des mères : 
+Ce premier tableau présente la repartitions de cancers de l’enfant selon le statut tabagique des mères : 
 
 
 ```{r}
@@ -24,7 +24,6 @@ dd = data.frame(do.call( rbind, list(
 colnames(dd) = c("cancer", "tabac", "alcool")
 rownames(dd) = NULL
 # head(dd)
-#
 table(dd$tabac, dd$cancer)
 ```
 
@@ -90,7 +89,7 @@ OR_{\text{smoker}/\text{nosmok}}
 
 
 
-On observe pas de risque particulier de cancer pédiatrique chez les enfants de femmes fumeuses.
+On observe pas de risque particulier de cancers pédiatriques chez les enfants de femmes fumeuses.
 
 4. *Donnez l’expression analytique du modèle envisagé.*
 
@@ -172,7 +171,7 @@ dim(dd)
 
 
 
-Ce second tableau présente se focalise sur la distribution de cancer de l’enfant selon le statut tabagique chez des mères ayant bu de l’alcool pendant la grossesse : 
+Ce second tableau se focalise sur la distribution des cancers de l’enfant selon le statut tabagique chez des mères ayant bu de l’alcool pendant la grossesse : 
 
 
 ```{r results="verbatim"}
@@ -192,7 +191,7 @@ OR_{\text{smoker}/\text{nosmok}}
 \end{eqnarray}
 
 
-Chez les enfants de mères fumeuses ayant bu de l’alcool pendant la grossesse, on observe un risque plus élevé de cancer pédiatrique.
+Chez les enfants de mères fumeuses ayant bu de l’alcool pendant la grossesse, on observe un risque plus élevé de cancers pédiatriques.
 
 
 ```{r results="verbatim", echo=TRUE}
