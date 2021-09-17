@@ -6,7 +6,7 @@ A set of pedagogical documents to learn and teach logistic models
 git
 
 ```
-git clone git@github.com:fchuffar/logistic_models.git
+git clone https://github.com/fchuffar/logistic_models.git
 cd logistic_models
 ```
 
