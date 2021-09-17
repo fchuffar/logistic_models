@@ -59,10 +59,10 @@ Séance 4 - 3h  Modèle de comptage, Régression de Poisson
 ```{r child = '01_cours_reglog.Rmd', eval=TRUE}
 ```
 
-```{r child = '02_cours_reglog.Rmd', eval=FALSE}
+```{r estim_params, child = '02_cours_reglog.Rmd', eval=FALSE}
 ```
 
-```{r child = '03_cours_reglog.Rmd', eval=FALSE}
+```{r child = '03_cours_reglog.Rmd', eval=TRUE}
 ```
 
 ```{r child = '04_cours_reglog.Rmd', eval=FALSE}

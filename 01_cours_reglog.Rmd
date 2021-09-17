@@ -13,7 +13,7 @@ $$\mathbb{E}(Y|X) = \mathbb{P}(Y=1|X=x) = \pi (x)$$
 d = MASS::cats
 layout(1, respect=TRUE)
 s = as.numeric(d$Sex) - 1
-plot(d$Bwt, jitter(s, factor=.1)x, main="Sex~Bwt", xlab="Bwt", ylab="Sex", ylim=c(-.1,1.1))
+plot(d$Bwt, jitter(s, factor=.1), main="Sex~Bwt", xlab="Bwt", ylab="Sex", ylim=c(-.1,1.1))
 ```
 
 
