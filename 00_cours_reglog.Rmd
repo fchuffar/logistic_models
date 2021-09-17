@@ -36,7 +36,7 @@ On appelle $\pi(x)$, le prédicteur de $Y=1$ en fonction de la valeur $x$ prise 
 
 
 
-## Mesures d'interêt
+## Mesures d'intérêt
 
 On définit les **Odds** :
 
@@ -61,7 +61,7 @@ $$ RR_{u/v} = \frac{\pi(X = u)}{\pi(X=v)} = \frac{P(Y=1|X=u)}{P(Y=1|X=v)} $$
 
 $RR$ estime le risque de voir se réaliser l’évènement pour une population relativenent à une autre, *e.g.* le risque d’être malades pour les fumeurs relativement aux non fumeurs.
 
-Note : le risque relatif est plus facilement interoprétrable que l’*odds ratio* et si $p$ est petit alors $\frac{p}{1-p} \simeq p$ et l’*odds ratio* est proche du risque relatif.
+Note : le risque relatif est plus facilement interprétrable que l’*odds ratio* et si $p$ est petit alors $\frac{p}{1-p} \simeq p$ et l’*odds ratio* est proche du risque relatif.
 
 
 **Interoprétation**, $OR$ et $RR$ donnent la même indication sur la relation entre $Y$ et $X$ :
@@ -105,7 +105,7 @@ Note : le risque relatif est plus facilement interoprétrable que l’*odds rati
 
 
 
-** Exemple : les cancers pédiatriques **
+**Exemple : les cancers pédiatriques**
 
 On s’intéresse au rôle de différents facteurs (statut tabagique et alcoolique des mères) dans la survenue de cancers pédiatriques (chez l’enfant).
 
@@ -130,6 +130,11 @@ set.seed(1)
 d = d[sample(1:nrow(d)),]
 colnames(d) = c("cancer", "tabac", "alcool")
 rownames(d) = NULL
+
+d$cancer = factor(d$cancer)
+d$tabac = factor(d$tabac)
+d$alcool = factor(d$alcool)
+
 ```
 
 ```{r echo=TRUE, results="verbatim"}
@@ -235,7 +240,74 @@ table(d2$tabac, d2$cancer)
 
 Réalisez la même étude sur ces données.
 
+```{r eval=FALSE}
+# a b 
+# c d
+a=1128; b=487; c=289; d=133
+# a=272; b=88; c=76; d=47
 
+# tableau initial
+a
+b
+c
+d
+
+# pop totale
+tot = (a+b+c+d)
+
+# effectifs marginaux
+(a+c)
+(b+d)
+(a+b)
+(c+d)
+
+# proportions marginales
+(a+c) / tot
+(b+d) / tot
+(a+b) / tot
+(c+d) / tot
+
+# effectifs théoriques
+a_th = tot * ((a+c) / tot) * ((a+b) / tot)
+b_th = tot * ((b+d) / tot) * ((a+b) / tot)
+c_th = tot * ((a+c) / tot) * ((c+d) / tot)
+d_th = tot * ((b+d) / tot) * ((c+d) / tot)
+
+a_th
+b_th
+c_th
+d_th
+
+# stat du chi2
+(a_th - a)^2 / a_th +
+(b_th - b)^2 / b_th +
+(c_th - c)^2 / c_th +
+(d_th - d)^2 / d_th 
+
+
+chisq.test(matrix(c(a,b,c,d),2,2, byrow=TRUE), correct=FALSE)
+
+
+a=272; b=88; c=76; d=47
+
+pi_smo = d / (d+c)
+pi_nos = b / (a+b)
+pi_smo
+pi_nos
+
+odd_smo = pi_smo / (1-pi_smo)
+odd_nos = pi_nos / (1-pi_nos)
+odd_smo
+odd_nos
+
+or = odd_smo/odd_nos
+or
+
+rr = pi_smo / pi_nos
+rr
+
+chisq.test(matrix(c(a,b,c,d),2,2, byrow=TRUE), correct=FALSE)
+```
 
 
 
@@ -356,9 +428,6 @@ On rejette $H_0$ au seuil $\alpha$ si $T>z^1_{1-\alpha}$ avec $z^1_{1-\alpha}$ l
 
 
 ```{r eval=FALSE}
-a=1128; b=487; c=289; d=133
-a=272; b=88; c=76; d=47
-
 chisq.test(matrix(c(a,b,c,d),2,2, byrow=TRUE), correct=FALSE)
 
 beta = log((a*d)/(b*c))   
@@ -434,7 +503,49 @@ l(x_i, 0) &=& P(y_i = 1|x_i)^0 (1-P(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \
 
 
 
+```{r eval = FALSE}
+a=1128; b=487; c=289; d=133
+# a=272; b=88; c=76; d=47
 
+p = (b + d) / (a+c+b+d)  
+p
+l1 = p^(b+d) *  (1-p)^(a+c)
+l1
+ll1 = (b+d) * log(p) + (a+c) * log(1-p)
+ll1 
+log(l1)
+  
+p_nos = b / (a + b)
+p_smo = d / (c + d)
+l2 = p_smo^d * (1-p_smo)^c * p_nos^b * (1-p_nos)^a
+l2
+ll2 = d*log(p_smo) + c*log(1-p_smo) + b*log(p_nos) + a*log(1- p_nos) 
+ll2
+ll2
+-2*(ll1 - ll2)
+1- pchisq(-2*(ll1 - ll2),1)
+pchisq(-2*(ll1 - ll2), 1, lower.tail=FALSE)
+```
+
+
+
+```{r}
+m = glm(d$cancer~d$tabac, family = binomial(logit))
+m$coefficients
+summary(m)
+
+m = glm(d2$cancer~d2$tabac, family = binomial(logit))
+m$coefficients
+summary(m)
+
+m = glm(d$cancer~d$tabac + d$alcool, family = binomial(logit))
+m$coefficients
+summary(m)
+
+m = glm(d$cancer~d$tabac * d$alcool, family = binomial(logit))
+m$coefficients
+summary(m)
+```
 
 
 
