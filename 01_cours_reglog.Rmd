@@ -1,9 +1,23 @@
+# X covariable quatitative
+
+On considère dans cette section une relation entre une variable binaire $Y$  et une variables explicatives $X$ quantitatives et on cherche à modéliser :
+
+$$Y \sim X$$
+
+
+$$\mathbb{E}(Y|X) = \mathbb{P}(Y=1|X=x) = \pi (x)$$
 
 
 
+```{r}
+d = MASS::cats
+layout(1, respect=TRUE)
+s = as.numeric(d$Sex) - 1
+plot(d$Bwt, jitter(s, factor=.1)x, main="Sex~Bwt", xlab="Bwt", ylab="Sex", ylim=c(-.1,1.1))
+```
 
 
-# Modèles linéaires (rappel) 
+## Modèles linéaires (rappel) 
 
 $Y$ est expliquée (modélisée) par  les variables explicatives $X= (X_1,X_2,...,X_p)$.
 
@@ -107,14 +121,7 @@ anova(m)
 
 
 
-# Variable explicative quantitative
-
-On considère dans cette section x une variable quantitaive et on cherche à modéliser
-
-$Y ~ x$
-
-
-### Tentative avec la regression linéaire
+## Tentative avec la regression linéaire
 
 
 Considérons un second modèle dans lequel $\pi(x) = \beta_0 + \beta_1 x$ :
@@ -137,7 +144,7 @@ legend("bottomright",c("regression line", "residuals"), col=c(2,4), lty=1, cex=0
 ```
 
 
-### La fonction logit
+## La fonction logit
 
 On introduit donc la fonction *logit*
 
@@ -213,25 +220,23 @@ $$\mathbb{P}(Y=1|X) = \pi(X) = logit^{-1}(\beta X)$$
 
 
 
+La regression logistique est un modéle linéaire géneralisé (*glm*) qui utilise la fonction *logit* comme fontion de lien.
 
 
-
-
-
-
+```{r echo=TRUE, results="verbatim"}
+m = glm(d$Sex~d$Bwt, family = binomial(logit))
+m$coefficients
+summary(m)
+```
 
 
 
 
 ## Mesures d'intérêt
 
-On définit les **Odds** :
+Les **Odds** :
 
 $$Odds(X) = \frac{\pi(X)}{1-\pi(X)}$$
-
-Ce qui correspond à la cote d’un événement, la probabilité que l’événement se produise par rapport à la probabilité qu’il ne se produise pas. 
-
-Ainsi : 
 
 \begin{eqnarray}
 \mathbb{P}(Y=1|X) &=& \pi(X) &=& logit^{-1}(\beta X) \\
@@ -242,57 +247,7 @@ logit(\mathbb{P}(Y=1|X)) &=& logit(\pi(X)) &=& \beta X \\
 
 \end{eqnarray}
 
-Notons au passage que $logit(\mathbb{P}(Y=1|X)) = log(Odds(X))$ est une varible aléatoire modélisée par un modèle linéaire. 
-C’est à partir de ce modèle linéaire que l’on obtient les p-valeurs du modèle logistique. La regression logistique est un modéle linéaire géneralisé (*glm*) qui utilise la fonction *logit* comme fontion de lien.
 
+Les **odds ratio** :
 
-```{r echo=TRUE, results="verbatim"}
-m = glm(d$Sex~d$Bwt, family = binomial(logit))
-m$coefficients
-summary(m)
-```
-
-On définit les **odds ratio** :
-
-$$OR_{u/v} = \frac{odd(X = u)}{odd(X=v)} = e^{\beta (u-v)}$$
-
-$OR$ estime par exemple le rapport malades/non-malades entre deux populations (facilement compréhensible quand $X$ est qualitatif).
-
-$OR$ est directement calculable à partir des coefficients de la régression $\beta$, il permet d’interpréter les $\widehat{\beta_k}$ et de mesurer l‘effet de la variable $X_k$ sur le modèle.
-
-
-
-
-
-On définit le **risque relatif** :
-
-$$ RR_{u/v} = \frac{\pi(X = u)}{\pi(X=v)} = \frac{P(Y=1|X=u)}{P(Y=1|X=v)} $$
-
-Note : si $p$ est petit alors $\frac{p}{1-p} \simeq p$ et l’*odds ratio* est proche du risque relatif.
-
-
-$RR$ estime le risque d’être par exemple malade.
-
-$OR$ et $RR$ donnent la même indication sur la relation entre $Y$ et $X$ :
-
-1) Si $RR_{u/v}$ (ou $OR_{u/v}$) $>1$ alors il y a plus de risque de $Y=1$ si $X=u$ que si $X=v$
-2) Si $RR_{u/v}$ (ou $OR_{u/v}$) $<1$ alors il y a moins de risque de $Y=1$ si $X=u$ que si $X=v$
-3) Si $RR_{u/v}$ (ou $OR_{u/v}$) $=1$ alors $Y$ n’est pas influencée par $X=u$ vs. $X=v$ (i.e. Y indépendant des catégories $u$ et $v$ de $X$)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+$$OR_{u/v} = \frac{odd(X = u)}{odd(X=v)} = e^{\beta (u-v)}$$  

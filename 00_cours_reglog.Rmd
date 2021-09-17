@@ -355,7 +355,33 @@ On rejette $H_0$ au seuil $\alpha$ si $T>z^1_{1-\alpha}$ avec $z^1_{1-\alpha}$ l
   
 
 
+```{r eval=FALSE}
+a=1128; b=487; c=289; d=133
+a=272; b=88; c=76; d=47
 
+chisq.test(matrix(c(a,b,c,d),2,2, byrow=TRUE), correct=FALSE)
+
+beta = log((a*d)/(b*c))   
+var = 1/a+1/b+1/c+1/d
+sd = sqrt(var)
+z = beta/sd               
+z
+2*(1-pnorm(z))     
+z^2
+1-pchisq(z^2,1)
+
+p = (b + d) / (a+c+b+d)  
+l1 = p^(b+d) *  (1-p)^(a+c)
+ll1 = (b+d) * log(p) + (a+c) * log(1-p)
+p_nos = b / (a + b)
+p_smo = d / (c + d)
+l2 = p_smo^d * (1-p_smo)^c * p_nos^b * (1-p_nos)^a
+ll2 = d*log(p_smo) + c*log(1-p_smo) + b*log(p_nos) + a*log(1- p_nos) 
+ll1
+ll2
+-2*(ll1 - ll2)
+1- pchisq(-2*(ll1 - ll2),1)
+```
 
 
 
@@ -401,10 +427,10 @@ l(x_i, 0) &=& P(y_i = 1|x_i)^0 (1-P(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \
 
 1. Calculer la vraisemblance du modéle nul pour le premier jeu de données des cancers pédiatriques.
 2. Calculer la vraisemblance du modéle tenant compet du statut tabac des mères pour le premier jeu de données des cancers pédiatriques.
-3. Réaliser le test de rapport ce vraisemblance à partir des deux valeurs précédemment calculée
+3. Réaliser le test de rapport ce vraisemblance à partir des deux valeurs précédemment calculées.
 4. Calculer la vraisemblance du modéle nul pour le second jeu de données des cancers pédiatriques.
 5. Calculer la vraisemblance du modéle tenant compet du statut tabac des mères pour le second jeu de données des cancers pédiatriques.
-6. Réaliser le test de rapport ce vraisemblance à partir des deux valeurs précédemment calculée
+6. Réaliser le test de rapport ce vraisemblance à partir des deux valeurs précédemment calculées.
 
 
 
