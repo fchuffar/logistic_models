@@ -1,4 +1,4 @@
-# X covariable qualitative
+# Le cas d'une covariable qualitative
 
 On considère dans cette section une relation entre une variable binaire $Y$  et une variables explicatives $X$ quantitatives et on cherche à modéliser :
 

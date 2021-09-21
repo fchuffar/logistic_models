@@ -1,4 +1,4 @@
-# Le modèle logistique
+# Introduction à la modèlisation logistique
 
 On cherche une relation entre une **variable binaire** $Y$ (observée, à expliquer) et un ensemble de variables explicatives $X$ (quantitatives ou qualitatives). 
 
@@ -103,20 +103,18 @@ Note : le risque relatif est plus facilement interprétrable que l’*odds ratio
 
 
 
-
-
-**Exemple : les cancers pédiatriques**
+## Exemple *les cancers pédiatriques*
 
 On s’intéresse au rôle de différents facteurs (statut tabagique et alcoolique des mères) dans la survenue de cancers pédiatriques (chez l’enfant).
 
 On dispose du tableau de  données suivantes : 
 
 
-```{r}
+```{r childhood_cancer}
 # tabac = matrix(c(1128, 289, 487, 133), 2)
 # tabac = matrix(c( 272,  76,  88,  47), 2)
 # tabac = matrix(c( 856, 213, 399,  86), 2)
-d = data.frame(do.call( rbind, list(
+childhood_cancer = data.frame(do.call( rbind, list(
   matrix(rep(c("healthy", "nosmok", "drinker"), 272), byrow=TRUE, ncol=3),
   matrix(rep(c("healthy", "smoker", "drinker"),  76), byrow=TRUE, ncol=3),
   matrix(rep(c("sick"   , "nosmok", "drinker"),  88), byrow=TRUE, ncol=3),
@@ -127,14 +125,14 @@ d = data.frame(do.call( rbind, list(
   matrix(rep(c("sick"   , "smoker", "nodrink"),  86), byrow=TRUE, ncol=3)
 )))
 set.seed(1)
-d = d[sample(1:nrow(d)),]
-colnames(d) = c("cancer", "tabac", "alcool")
-rownames(d) = NULL
+childhood_cancer = childhood_cancer[sample(1:nrow(childhood_cancer)),]
+colnames(childhood_cancer) = c("cancer", "tabac", "alcool")
+rownames(childhood_cancer) = NULL
 
-d$cancer = factor(d$cancer)
-d$tabac = factor(d$tabac)
-d$alcool = factor(d$alcool)
-
+childhood_cancer$cancer = factor(childhood_cancer$cancer)
+childhood_cancer$tabac = factor(childhood_cancer$tabac)
+childhood_cancer$alcool = factor(childhood_cancer$alcool)
+d = childhood_cancer
 ```
 
 ```{r echo=TRUE, results="verbatim"}
@@ -211,7 +209,7 @@ Conclusion, on n’observe pas de risque particulier de cancers pédiatriques ch
 
 
 
-
+Représentation graphique : 
 
 ```{r}
 layout(matrix(1:2, 1), respect=TRUE)
@@ -227,22 +225,9 @@ legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
 ```
 
 
+**Significativité**, A partir du tableau de contingence on teste si il y a un enrichissement particilier dans une sous population. Notons que la somme des difƒérences entre les effectifs théoriques et les effectifs observés au carré chacun divisés par les effectifs théoriques suit une loi du chi2. Ce qui donne : 
 
-
-**Exercice** 
-
-Ce second tableau de contingence présente la repartition de cancers de l’enfant selon le statut tabagique chez des mères **ayant bu de l’alcool pendant la grossesse** : 
-
-```{r results="verbatim"}
-d2 = d[d$alcool%in%"drinker",]
-table(d2$tabac, d2$cancer)
-```
-
-Réalisez la même étude sur ces données.
-
-```{r eval=FALSE}
-# a b 
-# c d
+```{r  chi2_childhood_cancer, echo=TRUE, results="verbatim"}
 a=1128; b=487; c=289; d=133
 # a=272; b=88; c=76; d=47
 
@@ -279,15 +264,34 @@ c_th
 d_th
 
 # stat du chi2
-(a_th - a)^2 / a_th +
+t = (a_th - a)^2 / a_th +
 (b_th - b)^2 / b_th +
 (c_th - c)^2 / c_th +
 (d_th - d)^2 / d_th 
+t
 
+1-pchisq(t,1)
+pchisq(t,1, lower.tail=FALSE)
 
 chisq.test(matrix(c(a,b,c,d),2,2, byrow=TRUE), correct=FALSE)
+```
 
 
+
+
+**Exercice** 
+
+Ce second tableau de contingence présente la repartition de cancers de l’enfant selon le statut tabagique chez des mères **ayant bu de l’alcool pendant la grossesse** : 
+
+```{r results="verbatim"}
+d = childhood_cancer
+d2 = d[d$alcool%in%"drinker",]
+table(d2$tabac, d2$cancer)
+```
+
+Réalisez la même étude sur ces données.
+
+```{r eval=FALSE}
 a=272; b=88; c=76; d=47
 
 pi_smo = d / (d+c)
@@ -306,7 +310,62 @@ or
 rr = pi_smo / pi_nos
 rr
 
+# tableau initial
+a
+b
+c
+d
+
+# pop totale
+tot = (a+b+c+d)
+
+# effectifs marginaux
+(a+c)
+(b+d)
+(a+b)
+(c+d)
+
+# proportions marginales
+(a+c) / tot
+(b+d) / tot
+(a+b) / tot
+(c+d) / tot
+
+# effectifs théoriques
+a_th = tot * ((a+c) / tot) * ((a+b) / tot)
+b_th = tot * ((b+d) / tot) * ((a+b) / tot)
+c_th = tot * ((a+c) / tot) * ((c+d) / tot)
+d_th = tot * ((b+d) / tot) * ((c+d) / tot)
+
+a_th
+b_th
+c_th
+d_th
+
+# stat du chi2
+t = (a_th - a)^2 / a_th +
+(b_th - b)^2 / b_th +
+(c_th - c)^2 / c_th +
+(d_th - d)^2 / d_th 
+t
+
+1-pchisq(t,1)
+pchisq(t,1, lower.tail=FALSE)
+
 chisq.test(matrix(c(a,b,c,d),2,2, byrow=TRUE), correct=FALSE)
+
+# Autre manière de réaliser le test Wald/Chi2 (voir ennoncé TP1)
+
+beta = log((a*d)/(b*c))   
+var = 1/a+1/b+1/c+1/d
+sd = sqrt(var)
+z = beta/sd               
+# Wald
+z
+2*(1-pnorm(z))     
+# Chi2
+z^2
+1-pchisq(z^2,1)
 ```
 
 
@@ -427,35 +486,6 @@ On rejette $H_0$ au seuil $\alpha$ si $T>z^1_{1-\alpha}$ avec $z^1_{1-\alpha}$ l
   
 
 
-```{r eval=FALSE}
-chisq.test(matrix(c(a,b,c,d),2,2, byrow=TRUE), correct=FALSE)
-
-beta = log((a*d)/(b*c))   
-var = 1/a+1/b+1/c+1/d
-sd = sqrt(var)
-z = beta/sd               
-z
-2*(1-pnorm(z))     
-z^2
-1-pchisq(z^2,1)
-
-p = (b + d) / (a+c+b+d)  
-l1 = p^(b+d) *  (1-p)^(a+c)
-ll1 = (b+d) * log(p) + (a+c) * log(1-p)
-p_nos = b / (a + b)
-p_smo = d / (c + d)
-l2 = p_smo^d * (1-p_smo)^c * p_nos^b * (1-p_nos)^a
-ll2 = d*log(p_smo) + c*log(1-p_smo) + b*log(p_nos) + a*log(1- p_nos) 
-ll1
-ll2
--2*(ll1 - ll2)
-1- pchisq(-2*(ll1 - ll2),1)
-```
-
-
-
-
-
 
 
 
@@ -507,7 +537,8 @@ l(x_i, 0) &=& P(y_i = 1|x_i)^0 (1-P(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \
 a=1128; b=487; c=289; d=133
 # a=272; b=88; c=76; d=47
 
-p = (b + d) / (a+c+b+d)  
+# M1
+p = (b+d) / (a+c+b+d)  
 p
 l1 = p^(b+d) *  (1-p)^(a+c)
 l1
@@ -515,35 +546,43 @@ ll1 = (b+d) * log(p) + (a+c) * log(1-p)
 ll1 
 log(l1)
   
+# M2
 p_nos = b / (a + b)
 p_smo = d / (c + d)
 l2 = p_smo^d * (1-p_smo)^c * p_nos^b * (1-p_nos)^a
 l2
 ll2 = d*log(p_smo) + c*log(1-p_smo) + b*log(p_nos) + a*log(1- p_nos) 
 ll2
-ll2
--2*(ll1 - ll2)
-1- pchisq(-2*(ll1 - ll2),1)
-pchisq(-2*(ll1 - ll2), 1, lower.tail=FALSE)
+log(l2)
+
+# Test
+T = -2 * (ll1 - ll2)
+1- pchisq(T,1)
+pchisq(T, 1, lower.tail=FALSE)
 ```
 
 
 
 ```{r}
+d = childhood_cancer
+d2 = d[d$alcool%in%"drinker",]
+
+# Autre maniére de faire le test de rapport de vraisemblance
+m1 = glm(d$cancer~1, family = binomial(logit))
+m2 = glm(d$cancer~d$tabac, family = binomial(logit))
+anova(m1, m2, test="Chisq")
+
+# Ecriture des modèles avec la fonction glm
 m = glm(d$cancer~d$tabac, family = binomial(logit))
-m$coefficients
 summary(m)
 
 m = glm(d2$cancer~d2$tabac, family = binomial(logit))
-m$coefficients
 summary(m)
 
 m = glm(d$cancer~d$tabac + d$alcool, family = binomial(logit))
-m$coefficients
 summary(m)
 
 m = glm(d$cancer~d$tabac * d$alcool, family = binomial(logit))
-m$coefficients
 summary(m)
 ```
 

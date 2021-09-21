@@ -191,7 +191,7 @@ H_1 : \beta_{Hwt} \neq 0
 \right.$$
 
 ```{r echo=TRUE, results="verbatim"}
-anova(m2, m1, test="Chisq")
+anova(m1, m2, test="Chisq")
 ```
 
 
