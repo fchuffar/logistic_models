@@ -563,7 +563,7 @@ pchisq(T, 1, lower.tail=FALSE)
 
 
 
-```{r}
+```{r, echo = TRUE, results = "verbatim"}
 d = childhood_cancer
 d2 = d[d$alcool%in%"drinker",]
 

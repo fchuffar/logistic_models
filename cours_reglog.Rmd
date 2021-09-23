@@ -45,7 +45,7 @@ options(contrasts=c("contr.sum", "contr.poly"))
 
 Séance 1 - 3h  git, rmarkdown, le modèle logistique
 
-Séance 2 - 3h  Variable explicative quantitaive
+Séance 2 - 3h  Variable explicative quantitative
 
 Séance 3 - 3h  Data Challenge
 
@@ -65,10 +65,10 @@ Séance 4 - 3h  Modèle de comptage, Régression de Poisson
 ```{r child = '03_cours_reglog.Rmd', eval=TRUE}
 ```
 
-```{r child = '04_cours_reglog.Rmd', eval=FALSE}
+```{r child = '04_cours_reglog.Rmd', eval=TRUE}
 ```
 
-```{r child = '05_cours_reglog.Rmd', eval=FALSE}
+```{r child = '05_cours_reglog.Rmd', eval=TRUE}
 ```
 
 ```{r child = '06_cours_reglog.Rmd', eval=FALSE}
