@@ -17,7 +17,7 @@ $$BIC = -2log(\mathcal{L}_n(\widehat{\beta})) + p \log(n)$$
 
 **Remarques** : 
 
-- Ces critères s’appliquent aux modèles estimés par une méthode du **maximum de vraisemblance**.
+- Les critères AIC et BIC sont calculés à partir du **maximum de vraisemblance**.
 - Le pseudo-$R^2$ de McFadden augmente de façon monotone avec l’introduction de nouvelles variables.
 - Pour l’AIC et le BIC, le meilleur modèle est celui qui minimise le critère.
 - Le BIC est plus parcimonieux que l’AIC puisqu’il pénalise plus le nombre de variables présentent de le modèle.

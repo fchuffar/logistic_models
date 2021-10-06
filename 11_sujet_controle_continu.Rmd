@@ -1,0 +1,41 @@
+---
+title: "Contrôle continu"
+subtitle: "Université Grenoble Alpes - M2 SSD - regression logistique"
+author: "Florent Chuffart & Magali Richard"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Répondez aux questions suivantes en utilisant ce .Rmd comme template. N'oubliez pas de remplacer la variable 'author' par vos noms et prénoms! Compilez vos résultats dans un PDF de deux pages maximum. Ce travail est à renvoyer par e-mail avant le mardi 28 septembre 2021 (minuit) à magali.richard@univ-grenoble-alpes.fr.
+
+# Sujet
+
+On cherche à explique la pratique du sport par le poids, à l'aide des données contenues dans la library(questionr). Utilisez la `dataframe d` pour répondre aux questions suivantes.
+
+```{r results="verbatim", echo=TRUE}
+library(questionr)
+data(hdv2003)
+d = hdv2003
+```
+
+
+1. Identifiez la variable expliquée Y et la variable explicative $X_1$, ainsi que les valeurs qu’elles peuvent prendre.
+
+2. Donnez l'ecriture analytique du modèle
+
+3. Indiquez les hypothèse $H_0$ et $H1$
+
+4. Indiquez le test statistique utilisé et la statistique de test associée
+
+5. Indiquez la valeur de la statistique
+
+6. Indiquez la P-valeur associée
+
+7. Conclusion
+
+
+
