@@ -1,10 +1,9 @@
 ---
 title: "Régression Logistique et GLMs"
-subtitle: "M2 SSD"
 author: "Florent Chuffart & Magali Richard"
 date: "`r Sys.Date()`"
 output: 
-  rmarkdown::html_notebook:
+  rmarkdown::html_document:
     toc: true
     toc_float: true
     toc_depth: 2

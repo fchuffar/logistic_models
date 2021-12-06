@@ -89,7 +89,9 @@ plot_sim = function(sim, DETAILS=0) {
     plot(sim$socks, 1:length(sim$socks), yaxt="n", xlab="", ylab="", las=2)
     abline(v=sim$box_bounds)
     legend("topright", c("socks", "box bounds"), pch=c(1,NA), lty=c(0,1))
-    barplot(sim$d$y, las=2, ylab="#socks", xlab="")
+    y = sim$d$y
+    names(y) = sim$d$box
+    barplot(y, las=2, ylab="#socks")
   }
   if (!DETAILS>0) {
     lambda = length(sim$socks) / length(sim$box_bounds[-1])
@@ -256,30 +258,30 @@ predict(m, data.frame(box_size=0))
 ```
 
 
-## Régression de Poisson
+## Regression de Poisson
 
-La régression de Poisson est un modèle linéaire généralisé où la réponse y suit une distribution de Poisson : 
+La regression de Poisson est un modèle linéaire généralisé où la réponse y suit une distribution de Poisson : 
 
 $$y \sim \text{Pois}(\lambda)$$
 
 
 La fonction de lien est le logarithme ainsi :
 
-$$log(\lambda)= \beta x = \beta_0 + \beta_1 x$$
+$$log(y)= \beta x = \beta_0 + \beta_1 x$$
 
-$$\lambda= e^{\beta x} = e^{\beta_0} * e{\beta_1 x}$$
+$$y= e^{\beta x} = e^{\beta_0} * e^{\beta_1 x}$$
 
 
 Pourquoi le log ? Parce-qu’il à de bonnes **proriétés** : 
 
 \begin{eqnarray}
-\text{log: } ]0,+\infty[ &\rightarrow& \mathbb{R}   &\qquad& \lim_{lambda\to0} log(lambda) &=& -\infty  \hspace{12cm}\\
-                   \lambda &\rightarrow& log(\lambda)     &\qquad& \lim_{lambda\to+\infty} log(lambda) &=& +\infty  \hspace{12cm}\\
+\text{log: } ]0,+\infty[ &\rightarrow& \mathbb{R}   &\qquad& \lim_{y\to0} log(y) &=& -\infty  \hspace{12cm}\\
+                   y &\rightarrow& log(y)     &\qquad& \lim_{y\to+\infty} log(y) &=& +\infty  \hspace{12cm}\\
 \end{eqnarray}
 
 \begin{eqnarray}
-\hspace{12cm} \text{logit$^{-1}$: } \mathbb{R} &\rightarrow& ]0,+\infty[            &\qquad& \lim_{x\to-\infty} logit^{-1}(x) &=& 0\\
-\hspace{12cm}                                x &\rightarrow& log^{-1}(x)=exp(x)=e^x=\lambda &\qquad& \lim_{x\to+\infty} logit^{-1}(x) &=& +\infty\\
+\hspace{8cm} \text{log$^{-1}$: } \mathbb{R} &\rightarrow& ]0,+\infty[            &\qquad& \lim_{x\to-\infty} log^{-1}(x) &=& 0\\
+\hspace{8cm}                                x &\rightarrow& log^{-1}(x)=exp(x)=e^x=y &\qquad& \lim_{x\to+\infty} log^{-1}(x) &=& +\infty\\
 \end{eqnarray}
 
 ```{r}
@@ -314,7 +316,6 @@ summary(m_size)
 exp(m_size$coefficients[[1]])
 exp(m_size$coefficients[[2]])
 exp(m_size$coefficients[[1]]) * exp(m_size$coefficients[[2]]*log(0.1))
-# exp(m_size$coefficients[[1]]) * exp(m_size$coefficients[[2]]*1/nrow(sim_size$d))
 predict(m_size, data.frame(box_size=0.1), type="response")
 predict(m_size, data.frame(box_size=0.001), type="response")
 predict(m_size, data.frame(box_size=0), type="response")
@@ -337,7 +338,7 @@ legend("topleft", c("y_obs", "y_pred"), col=1:2, pch=1)
 
 
 ```{r echo="TRUE", results="verbatim"}
-m_null = glm(sim_null$d$y ~ 1, family=poisson(link="log"))
+m_null = glm(y ~ 1, sim_null$d, family=poisson(link="log"))
 summary(m_null)
 exp(m_null$coefficients[[1]])
 
@@ -357,9 +358,6 @@ lambda_S
 
 Les données *InsectSprays* décrivent 72 parcelles agricoles par le nombre d’insectes qu’elles contiennent (variable à expliquer, *count*) et le type d’insecticide auquel elles ont été exposées (variable explicative, *spray*).
 
-1. Réaliser un modéle quantifiant l’impacte de la covariable `spray` sur la quantité d’insectes dénombrée par parcelle (`count`).
-
-2. Interpréter les résultats du modèle.
 
 ```{r results="verbatim", echo=TRUE}
 data("InsectSprays")
@@ -372,4 +370,13 @@ p = plot(d$spray, d$count, main="count~spray", xlab="spray", ylab="count", borde
 points(jitter(as.numeric(d$spray)), d$count)
 ```
 
-correction `correction_insectspray.Rmd`
+1. Réaliser un modéle quantifiant l’impacte de la covariable `spray` sur la quantité d’insectes dénombrée par parcelle (`count`).
+
+2. Interpréter les résultats du modèle.
+ 
+3. Caculer les effets de chacun des spray à partir du modèle, 
+
+4. Reporter ces effet sur le graphique initial.
+
+
+correction `correction_insectspray_glm.Rmd`
