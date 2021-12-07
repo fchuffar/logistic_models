@@ -14,6 +14,8 @@ d = MASS::cats
 layout(1, respect=TRUE)
 s = as.numeric(d$Sex) - 1
 plot(d$Bwt, jitter(s, factor=.1), main="Sex~Bwt", xlab="Bwt", ylab="Sex", ylim=c(-.1,1.1))
+d$Sex
+
 ```
 
 

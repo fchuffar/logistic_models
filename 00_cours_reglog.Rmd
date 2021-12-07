@@ -64,7 +64,7 @@ $RR$ estime le risque de voir se réaliser l’évènement pour une population r
 Note : le risque relatif est plus facilement interprétrable que l’*odds ratio* et si $p$ est petit alors $\frac{p}{1-p} \simeq p$ et l’*odds ratio* est proche du risque relatif.
 
 
-**Interoprétation**, $OR$ et $RR$ donnent la même indication sur la relation entre $Y$ et $X$ :
+**Interprétation**, $OR$ et $RR$ donnent la même indication sur la relation entre $Y$ et $X$ :
 
 1) Si $RR_{u/v}$ (ou $OR_{u/v}$) $>1$ alors il y a plus de risque de $Y=1$ si $X=u$ que si $X=v$
 2) Si $RR_{u/v}$ (ou $OR_{u/v}$) $<1$ alors il y a moins de risque de $Y=1$ si $X=u$ que si $X=v$
