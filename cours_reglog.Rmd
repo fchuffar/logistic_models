@@ -1,6 +1,5 @@
 ---
 title: "Régression Logistique et GLMs"
-subtitle: "M2 SSD"
 author: "Florent Chuffart & Magali Richard"
 date: "`r Sys.Date()`"
 output: 
@@ -49,7 +48,7 @@ Séance 2 - 3h  Variable explicative quantitative
 
 Séance 3 - 3h  Data Challenge
 
-Séance 4 - 3h  Modèle de comptage, Régression de Poisson
+Séance 4 - 3h  Données de comptage / Régression de Poisson
 
 
 
@@ -59,7 +58,7 @@ Séance 4 - 3h  Modèle de comptage, Régression de Poisson
 ```{r child = '01_cours_reglog.Rmd', eval=TRUE}
 ```
 
-```{r estim_params, child = '02_cours_reglog.Rmd', eval=FALSE}
+```{r estim_params, child='02_cours_reglog.Rmd', eval=FALSE}
 ```
 
 ```{r child = '03_cours_reglog.Rmd', eval=TRUE}
@@ -75,6 +74,9 @@ Séance 4 - 3h  Modèle de comptage, Régression de Poisson
 ```
 
 ```{r child = '07_cours_reglog.Rmd', eval=FALSE}
+```
+
+```{r child = '08_cours_reglog.Rmd', eval=TRUE}
 ```
 
 ```{r label="Poisson"}
@@ -97,7 +99,7 @@ Ce cours s’inspire des références suivantes :
 - [StatQuest: Logistic Regression](https://youtube.com/playlist?list=PLblh5JKOoLUKxzEP5HA2d-Li7IJkHfXSe)
 - Valerie Monbet *La régression logistique.pdf* 
 - http://wikistat.fr/pdf/st-m-modlin-reglog.pdf
-
+- [Régression de Poisson](https://pmarchand1.github.io/ECL7102/notes_cours/10-Regression_Poisson.pdf) (sept. 2021)
 
 ---
 

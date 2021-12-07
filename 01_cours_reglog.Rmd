@@ -192,7 +192,7 @@ x = seq(-4, 4,  length.out=100)
 plot(x, 1 / (1+exp(-x)), main="logit^-1", type="l")
 ```
 
-Et on considérele le modèle logistique dans lequel $\pi(x) = logit^{-1}(\beta_0 + \beta_1 x)$ :
+Et on considére le modèle logistique dans lequel $\pi(x) = logit^{-1}(\beta_0 + \beta_1 x)$ :
 
 $$\mathbb{P}(Y=1|x) = \pi(x) = logit^{-1}(\beta_0 + \beta_1 x)$$ 
 
