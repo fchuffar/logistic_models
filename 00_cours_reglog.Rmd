@@ -499,27 +499,27 @@ On rejette $H_0$ au seuil $\alpha$ si $T>z^1_{1-\alpha}$ avec $z^1_{1-\alpha}$ l
   - des observations $(x_i, y_i)$
   - du modèle $\mathcal{M}$
 
-  $$\mathcal{L}_{\mathcal{M},(x_i, y_i)} = \prod_{i\ in I} \mathbb{P} (y_i|x_i, \mathcal{M})$$
+  $$\mathcal{L}_{\mathcal{M},(x_i, y_i)} = \prod_{i \in I} \mathbb{P} (y_i|x_i, \mathcal{M})$$
 
 
 **Contribution des observations** : 
 
 Pour l’observation $i$, la contribution à la vraisemblance est donc (Bernoulli) : 
 
-$$l(x_i, y_i) = P(y_i = 1|x_i)^{y_i} (1-P(y_i=1|x_i))^{1-y_i} = \pi(x_i)^{y_i}(1-\pi(x_i))^{1-y_i} $$
+$$l(x_i, y_i) = \mathbb{P}(y_i = 1|x_i)^{y_i} (1-\mathbb{P}(y_i=1|x_i))^{1-y_i} = \pi(x_i)^{y_i}(1-\pi(x_i))^{1-y_i} $$
 
 si $y_i = 1$ : 
 \begin{eqnarray}
-l(x_i, 1) &=& P(y_i = 1|x_i)^1 (1-P(y_i=1|x_i))^0 &=& \pi(x_i)^1 (1-\pi(x_i))^0 \\
-&=& P(y_i = 1|x_i) 1 &=& \pi(x_i) 1 \\
-&=& P(y_i = 1|x_i) &=& \pi(x_i) \\
+l(x_i, 1) &=& \mathbb{P}(y_i = 1|x_i)^1 (1-\mathbb{P}(y_i=1|x_i))^0 &=& \pi(x_i)^1 (1-\pi(x_i))^0 \\
+&=& \mathbb{P}(y_i = 1|x_i) 1 &=& \pi(x_i) 1 \\
+&=& \mathbb{P}(y_i = 1|x_i) &=& \pi(x_i) \\
 \end{eqnarray}
 
 si $y_i = 0$ : 
 \begin{eqnarray}
-l(x_i, 0) &=& P(y_i = 1|x_i)^0 (1-P(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \\
-&=& 1 (1-P(y_i=1|x_i)) &=& 1 (1-\pi(x_i)) \\ 
-&=& 1-P(y_i=1|x_i) &=& 1-\pi(x_i) \\ 
+l(x_i, 0) &=& \mathbb{P}(y_i = 1|x_i)^0 (1-\mathbb{P}(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \\
+&=& 1 (1-\mathbb{P}(y_i=1|x_i)) &=& 1 (1-\pi(x_i)) \\ 
+&=& 1-\mathbb{P}(y_i=1|x_i) &=& 1-\pi(x_i) \\ 
 \end{eqnarray}
 
 
@@ -534,15 +534,17 @@ l(x_i, 0) &=& P(y_i = 1|x_i)^0 (1-P(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \
 
 
 
-```{r eval = FALSE}
+```{r, echo=TRUE, results="verbatim"}
 a=1128; b=487; c=289; d=133
-a=272; b=88; c=76; d=47
+# a=272; b=88; c=76; d=47
 
 # M1
 p = (b+d) / (a+c+b+d)  
 p
 l1 = p^(b+d) *  (1-p)^(a+c)
 l1
+# log(a*b) = log(a) + log(b)
+# log(a^2) = log(a*a) = log(a) + log(a) = 2*log(a)
 ll1 = (b+d) * log(p) + (a+c) * log(1-p)
 ll1 
 log(l1)
@@ -561,7 +563,7 @@ log(l2)
 # Test
 T = -2 * (ll1 - ll2)
 T
-  ```
+```
 
 
 
