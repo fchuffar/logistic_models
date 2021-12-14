@@ -536,32 +536,9 @@ l(x_i, 0) &=& P(y_i = 1|x_i)^0 (1-P(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \
 
 ```{r eval = FALSE}
 a=1128; b=487; c=289; d=133
-a=272; b=88; c=76; d=47
 
-# M1
-p = (b+d) / (a+c+b+d)  
-p
-l1 = p^(b+d) *  (1-p)^(a+c)
-l1
-ll1 = (b+d) * log(p) + (a+c) * log(1-p)
-ll1 
-log(l1)
-  
-# M2
-p_nos = b / (a + b)
-p_nos
-p_smo = d / (c + d)
-p_smo
-l2 = p_smo^d * (1-p_smo)^c * p_nos^b * (1-p_nos)^a
-l2
-ll2 = d*log(p_smo) + c*log(1-p_smo) + b*log(p_nos) + a*log(1- p_nos) 
-ll2
-log(l2)
 
-# Test
-T = -2 * (ll1 - ll2)
-T
-  ```
+```
 
 
 

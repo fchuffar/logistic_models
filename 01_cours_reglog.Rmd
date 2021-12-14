@@ -1,5 +1,5 @@
-# Le cas d'une covariable qualitative
-
+# Le cas d'une covariable quantitative
+s
 On considère dans cette section une relation entre une variable binaire $Y$  et une variables explicatives $X$ quantitatives et on cherche à modéliser :
 
 $$Y \sim X$$
