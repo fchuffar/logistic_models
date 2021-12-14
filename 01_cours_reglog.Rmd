@@ -1,5 +1,9 @@
 # Le cas d'une covariable quantitative
+<<<<<<< HEAD
 s
+=======
+
+>>>>>>> bf3ba5dbdd631f8c914793550f6e825f7274723c
 On considère dans cette section une relation entre une variable binaire $Y$  et une variables explicatives $X$ quantitatives et on cherche à modéliser :
 
 $$Y \sim X$$
@@ -14,6 +18,8 @@ d = MASS::cats
 layout(1, respect=TRUE)
 s = as.numeric(d$Sex) - 1
 plot(d$Bwt, jitter(s, factor=.1), main="Sex~Bwt", xlab="Bwt", ylab="Sex", ylim=c(-.1,1.1))
+d$Sex
+
 ```
 
 
