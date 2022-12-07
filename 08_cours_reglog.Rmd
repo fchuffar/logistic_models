@@ -4,7 +4,7 @@ On cherche une relation entre une variable **dénombrée** $y$ (observée, à ex
 
 $$y \sim X$$
 
-Exemples de variables dénombrée à expliquer / prédir : 
+Exemples de variables dénombrées à expliquer / prédir : 
   
   - Les données de comptage
   - le nombre d’observations d’un événement dans une unité d’échantillonnage définie.
@@ -149,10 +149,12 @@ Intuitivement, on peut tenter de faire un test de Student sur le modèle $y \sim
 mais on précise plus haut que *la variance de $y$ augmente avec sa moyenne*, on risque donc de ne pas vérifier l’hypothèse d’homoscedasticité.
 
 ```{r echo="TRUE", results="verbatim"}
+sim_sl$d
 m = lm(y~box_type, sim_sl$d)
 summary(m)
 shapiro.test(m$residuals)
 bartlett.test(y~box_type, sim_sl$d)
+wilcox.test(y~box_type, sim_sl$d)
 ```
 
 **Test du rapport de vraisemblance**
@@ -222,9 +224,9 @@ pchisq(T, 1, lower.tail=FALSE)
 
 ### Introduction d'un cofacteur quantitatif
 
-On fait varié la taille des boite de manière aléatoire.
+On fait varier la taille des boites de manière aléatoire.
 
-On s’interroge sur l’effet de la taille de la boite sur le nombre de chausettes qu’elle contient, toutes choses étant égales pat ailleurs. 
+On s’interroge sur l’effet de la taille de la boite sur le nombre de chausettes qu’elle contient, toutes choses étant égales par ailleurs. 
 
 $$y \sim box\_size$$
 
@@ -370,13 +372,15 @@ p = plot(d$spray, d$count, main="count~spray", xlab="spray", ylab="count", borde
 points(jitter(as.numeric(d$spray)), d$count)
 ```
 
+0. La variance est-elle homogène à travers chacun des groupes d’observations (par spray) ?
+
 1. Réaliser un modéle quantifiant l’impacte de la covariable `spray` sur la quantité d’insectes dénombrée par parcelle (`count`).
 
 2. Interpréter les résultats du modèle.
  
-3. Caculer les effets de chacun des spray à partir du modèle, 
+3. Caculer les effets de chacun des sprays à partir du modèle, 
 
-4. Reporter ces effet sur le graphique initial.
+4. Reporter ces effets sur le graphique initial.
 
 
 correction `correction_insectspray_glm.Rmd`

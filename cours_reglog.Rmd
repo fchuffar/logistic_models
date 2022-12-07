@@ -50,6 +50,15 @@ Séance 3 - 3h  Data Challenge
 
 Séance 4 - 3h  Données de comptage / Régression de Poisson
 
+  
+**Publicité**
+
+Le RIS est le Réseau Interdisciplinaire autour de la Statistique (Mission pour les Initiatives Transverses et Interdisciplinaires, CNRS).
+
+N’hésitez pas à rejoindre le RIS, vous serez tenus informés des actions de formation et des journées thématiques du réseau :
+ https://ris.cnrs.fr/rejoindre-le-reseau/
+
+
 
 
 ```{r child = '00_cours_reglog.Rmd', eval=TRUE}
