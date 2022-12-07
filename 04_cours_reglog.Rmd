@@ -18,7 +18,7 @@ Comment évaluer la *contribution* de chaque observation au modèle (*i.e.*, dé
 
 ## Pseudo-$R^2$ de McFadden
 
-Pour les modèles linèaires on définissait le $R^2$ comme le pourcentage de variance expliqué par le modèle.
+Pour les modèles linèaires on définissait le $R^2$ comme le pourcentage de variance expliquée par le modèle.
 
 C’est a dire 1 moins le rapport entre la variance résiduelle du modèle considéré et le variance du pire modèle, *i.e.* la variance du modèle nul, *i.e* la variance totale.
 

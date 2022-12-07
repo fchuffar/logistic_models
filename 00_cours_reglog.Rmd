@@ -225,7 +225,7 @@ legend("bottomright", "Y=Pi(X)", col=1, lty=1, cex=0.6)
 ```
 
 
-**Significativité**, A partir du tableau de contingence on teste si il y a un enrichissement particilier dans une sous population. Notons que la somme des difƒérences entre les effectifs théoriques et les effectifs observés au carré chacun divisés par les effectifs théoriques suit une loi du chi2. Ce qui donne : 
+**Significativité**, A partir du tableau de contingence on teste si il y a un enrichissement particilier dans une sous population. Notons que la somme des difƒérences entre les effectifs théoriques (sous $H_0$) et les effectifs observés au carré chacun divisés par les effectifs théoriques suit une loi du chi2. Ce qui donne : 
 
 ```{r  chi2_childhood_cancer, echo=TRUE, results="verbatim"}
 a=1128; b=487; c=289; d=133
@@ -291,87 +291,7 @@ table(d2$tabac, d2$cancer)
 
 Réalisez la même étude sur ces données.
 
-```{r eval=FALSE}
-a=272; b=88; c=76; d=47
-
-pi_smo = d / (d+c)
-pi_nos = b / (a+b)
-pi_smo
-pi_nos
-
-odd_smo = pi_smo / (1-pi_smo)
-odd_nos = pi_nos / (1-pi_nos)
-odd_smo
-odd_nos
-
-or = odd_smo/odd_nos
-or
-
-rr = pi_smo / pi_nos
-rr
-
-# tableau initial
-a
-b
-c
-d
-
-# pop totale
-tot = (a+b+c+d)
-
-# effectifs marginaux
-(a+c)
-(b+d)
-(a+b)
-(c+d)
-
-# proportions marginales
-(a+c) / tot
-(b+d) / tot
-(a+b) / tot
-(c+d) / tot
-
-# effectifs théoriques
-a_th = tot * ((a+c) / tot) * ((a+b) / tot)
-b_th = tot * ((b+d) / tot) * ((a+b) / tot)
-c_th = tot * ((a+c) / tot) * ((c+d) / tot)
-d_th = tot * ((b+d) / tot) * ((c+d) / tot)
-
-a_th
-b_th
-c_th
-d_th
-
-# stat du chi2
-t = (a_th - a)^2 / a_th +
-(b_th - b)^2 / b_th +
-(c_th - c)^2 / c_th +
-(d_th - d)^2 / d_th 
-t
-
-1-pchisq(t,1)
-pchisq(t,1, lower.tail=FALSE)
-
-chisq.test(matrix(c(a,b,c,d),2,2, byrow=TRUE), correct=FALSE)
-
-# Autre manière de réaliser le test Wald/Chi2 (voir ennoncé TP1)
-
-beta = log((a*d)/(b*c))   
-var = 1/a+1/b+1/c+1/d
-sd = sqrt(var)
-z = beta/sd               
-# Wald
-z
-2*(1-pnorm(z))     
-# Chi2
-z^2
-1-pchisq(z^2,1)
-```
-
-
-
-
-
+[correction_coagulation.R](./correction_coagulation.R)
 
 
 
@@ -447,6 +367,52 @@ $$\mathbb{P}(Y=k|X=x)=\pi(x)^k(1-\pi(x))^{1-k}, k \in \{0,1\}$$
 
 
 
+## Vraisemblance
+
+**Définition** : Probabilité d’observer les évènements $y_i$ en considérant le modèle $\mathcal{M}$
+
+**Important** : la vraisemblance dépend
+
+  - des observations $(x_i, y_i)$
+  - du modèle $\mathcal{M}$
+
+  $$\mathcal{L}_{\mathcal{M},(x_i, y_i)} = \prod_{i \in I} \mathbb{P} (y_i|x_i, \mathcal{M})$$
+
+
+**Contribution des observations** : 
+
+Pour l’observation $i$, la contribution à la vraisemblance est donc (Bernoulli) : 
+
+$$l(x_i, y_i) = \mathbb{P}(y_i = 1|x_i)^{y_i} (1-\mathbb{P}(y_i=1|x_i))^{1-y_i} = \pi(x_i)^{y_i}(1-\pi(x_i))^{1-y_i} $$
+
+si $y_i = 1$ : 
+\begin{eqnarray}
+l(x_i, 1) &=& \mathbb{P}(y_i = 1|x_i)^1 (1-\mathbb{P}(y_i=1|x_i))^0 &=& \pi(x_i)^1 (1-\pi(x_i))^0 \\
+&=& \mathbb{P}(y_i = 1|x_i) 1 &=& \pi(x_i) 1 \\
+&=& \mathbb{P}(y_i = 1|x_i) &=& \pi(x_i) \\
+\end{eqnarray}
+
+si $y_i = 0$ : 
+\begin{eqnarray}
+l(x_i, 0) &=& \mathbb{P}(y_i = 1|x_i)^0 (1-\mathbb{P}(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \\
+&=& 1 (1-\mathbb{P}(y_i=1|x_i)) &=& 1 (1-\pi(x_i)) \\ 
+&=& 1-\mathbb{P}(y_i=1|x_i) &=& 1-\pi(x_i) \\ 
+\end{eqnarray}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Test du rapport de vraisemblance
 
@@ -486,41 +452,6 @@ On rejette $H_0$ au seuil $\alpha$ si $T>z^1_{1-\alpha}$ avec $z^1_{1-\alpha}$ l
   - Il faut que ces modèles soient appliquées aux même observations, attention aux valeurs manquantes
   
 
-
-
-
-
-## Vraisemblance
-
-**Définition** : Probabilité d’observer les évènements $y_i$ en considérant le modèle $\mathcal{M}$
-
-**Important** : la vraisemblance dépend
-
-  - des observations $(x_i, y_i)$
-  - du modèle $\mathcal{M}$
-
-  $$\mathcal{L}_{\mathcal{M},(x_i, y_i)} = \prod_{i \in I} \mathbb{P} (y_i|x_i, \mathcal{M})$$
-
-
-**Contribution des observations** : 
-
-Pour l’observation $i$, la contribution à la vraisemblance est donc (Bernoulli) : 
-
-$$l(x_i, y_i) = \mathbb{P}(y_i = 1|x_i)^{y_i} (1-\mathbb{P}(y_i=1|x_i))^{1-y_i} = \pi(x_i)^{y_i}(1-\pi(x_i))^{1-y_i} $$
-
-si $y_i = 1$ : 
-\begin{eqnarray}
-l(x_i, 1) &=& \mathbb{P}(y_i = 1|x_i)^1 (1-\mathbb{P}(y_i=1|x_i))^0 &=& \pi(x_i)^1 (1-\pi(x_i))^0 \\
-&=& \mathbb{P}(y_i = 1|x_i) 1 &=& \pi(x_i) 1 \\
-&=& \mathbb{P}(y_i = 1|x_i) &=& \pi(x_i) \\
-\end{eqnarray}
-
-si $y_i = 0$ : 
-\begin{eqnarray}
-l(x_i, 0) &=& \mathbb{P}(y_i = 1|x_i)^0 (1-\mathbb{P}(y_i=1|x_i))^1 &=& \pi(x_i)^0(1-\pi(x_i))^1 \\
-&=& 1 (1-\mathbb{P}(y_i=1|x_i)) &=& 1 (1-\pi(x_i)) \\ 
-&=& 1-\mathbb{P}(y_i=1|x_i) &=& 1-\pi(x_i) \\ 
-\end{eqnarray}
 
 
 **Exercice**
